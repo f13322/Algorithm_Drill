@@ -4,22 +4,30 @@
     <link rel="stylesheet" href="style.css">
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
     <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
-    <script src="common.js"></script>
+    <script src="main.js"></script>
 </head>
 
 <body>
     <div style="align-items: center; display: flex; width: 100%; flex-direction: column;">
         <header>
-            <h1>Algorithm Drills</h1>
+            <h1 class="header">Algorithm Drills</h1>
         </header>
         <select id="selection" onchange="changeAlg()">
             <option value=""></option>
-            <option value="sort">Sort</option>
-            <option value="tree">Tree</option>
-            <option value="graph">Graph</option>
+            <option value="selection">Selection Sort</option>
+            <option value="insertion">Insertion Sort</option>
+            <option value="heap">Heap</option>
+            <option value="dfs">DFS</option>
         </select>
     </div>
     <div id="canvasContainer">
-        <canvas id="canvas" width="1600" height="700"></canvas>
+        <div id="instructionContainer">
+            <div id="x"><b>X</b></div>
+            <div id="instructions">a</div>
+            <!-- <div></div> -->
+        </div>
+        <canvas id="canvas">
+            
+        </canvas>
     </div>
 </body> 
