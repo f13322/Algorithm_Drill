@@ -1,11 +1,12 @@
 const HIGHLIGHT_COLOUR = "#ff5555";
 const DEFAULT_COLOUR = "#55ddff";
-const CORRECT_COLOUR = "#7FBA00";
+const CORRECT_COLOUR = "#8fd102";
+const PARTIAL_COLOUR = "#34ffcd";
+const HINT_COLOUR = "#FAEF59";
+const BUTTON_COLOUR = "#D3D3D3";
+
 const CANVAS_WIDTH = 1600;
 const CANVAS_HEIGHT = 700;
-const BUTTON_COLOUR = "lightgrey";
-const BUTTON_HOVER_COlOUR = "darkgrey";
-
 
 var drill;
 var instructionContainer = document.getElementById("instructionContainer");
@@ -50,9 +51,12 @@ class InstructionIcon{
     }
 }
 class Button{
-    constructor(x, y, text, stage){
+    constructor(x, y, width, height, text, stage){
         this.font = ["", "40px Arial", ""];
         this.container = new createjs.Container();
+        this.width = width;
+        this.height = height;
+        this.colour = BUTTON_COLOUR;
 
         this.stage = stage;
 
@@ -72,7 +76,7 @@ class Button{
         )
 
         this.shapeNode.graphics.beginFill(BUTTON_COLOUR)
-                                      .drawRect(0, 0, 200, 100)
+                                      .drawRect(0, 0, width, height)
                                       .endFill();
 
         this.shapeNode.addEventListener("mouseover", () =>{
@@ -91,7 +95,7 @@ class Button{
     hoverOn(){
         this.shapeNode
             .graphics.clear()
-                .beginFill(BUTTON_HOVER_COlOUR)
+                .beginFill(darkenColour(this.colour))
                 .drawRect(0, 0, 200, 100)
                 .endFill();
             this.textNode.x = this.textNode.x - 1;
@@ -102,12 +106,26 @@ class Button{
     hoverOff(){
         this.shapeNode
             .graphics.clear()
-                .beginFill(BUTTON_COLOUR)
+                .beginFill(this.colour)
                 .drawRect(0, 0, 200, 100)
                 .endFill();
-            this.textNode.x = this.textNode.x + 1;
-            this.textNode.y = this.textNode.y - 1;
-            this.stage.update();
+        this.textNode.x = this.textNode.x + 1;
+        this.textNode.y = this.textNode.y - 1;
+        this.stage.update();
+    }
+
+    changeColour(colour){
+        this.colour = colour;
+        this.shapeNode
+            .graphics.clear()
+                .beginFill(this.colour)
+                .drawRect(0, 0, 200, 100)
+                .endFill();
+        this.stage.update();
+    }
+
+    clear(){
+        this.stage.removeChild(this.container);
     }
 }
 
@@ -117,6 +135,8 @@ class SelectionSortDrill{
         this.cellWidth = 120;
         this.cellHeight = 120;
         this.count = 1;
+        this.hintCount = 3;
+        this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
         this.description = "-Sort the list using inesrtion sort, after each " + 
         "iteration click on Check to varify if it was correct.\n\n" + 
@@ -128,11 +148,12 @@ class SelectionSortDrill{
         this.stage = new createjs.Stage("canvas");
         this.stage.enableMouseOver();
         
-        var list = randomList(this.numValues);
+        const list = randomList(this.numValues);
         this.steps = this.selectionSortAlg(this.randomiseList(list));
 
         this.select = [];
         this.nodes = [];
+        this.hints = [];
         
         this.drawInitial();
         this.stage.update();
@@ -150,7 +171,7 @@ class SelectionSortDrill{
         var prev = 0;
         
         for (let n = temp.length; n > 0; n--){
-            let random = Math.floor(Math.random() * temp.length);
+            const random = Math.floor(Math.random() * temp.length);
             newList[temp[random]] = list[prev];
             prev = temp[random];
             temp.splice(random, 1);
@@ -186,22 +207,25 @@ class SelectionSortDrill{
         t2.parent.textNode.text = temp;
 
         t1.selected = false;
-        this.setRectColour(t1, DEFAULT_COLOUR);
+        this.setRectColour(t1, t1.baseColour);
         
         t2.selected = false;
-        this.setRectColour(t2, DEFAULT_COLOUR);
+        this.setRectColour(t2, t2.baseColour);
     }
 
     drawInitial(){
         for (let i = 0; i < this.numValues; i++){
-            let container = new createjs.Container();
-            let rect = new createjs.Shape();
-            let text = new createjs.Text(...this.font);
+            const container = new createjs.Container();
+            const rect = new createjs.Shape();
+            const text = new createjs.Text(...this.font);
             container.shapeNode = rect;
             container.textNode = text;
             
-            this.setRectColour(rect, DEFAULT_COLOUR);
             rect.selected = false;
+            rect.baseColour = DEFAULT_COLOUR;
+            rect.width = this.cellWidth;
+            rect.height = this.cellHeight;
+            this.setRectColour(rect, DEFAULT_COLOUR);
             container.y = CANVAS_HEIGHT/2 - this.cellHeight/2 - 100; 
             container.x = i * this.cellWidth 
                           + (CANVAS_WIDTH - this.numValues * this.cellWidth)/2;
@@ -229,7 +253,7 @@ class SelectionSortDrill{
             
             rect.addEventListener("mouseout", () => {
                 if (!rect.selected){
-                    this.setRectColour(rect, DEFAULT_COLOUR);
+                    this.setRectColour(rect, rect.baseColour);
                     this.stage.update();
                 }
             });
@@ -247,8 +271,8 @@ class SelectionSortDrill{
         
         this.iterationText = new createjs.Text("", "50px Arial", "").set({
             text: "Iteration 1",
-            x: this.nodes[0].x,
-            y: 120,
+            x: this.nodes[0].x - 50,
+            y: 100,
             lineWidth: 400
         });
         this.stage.addChild(this.iterationText);
@@ -267,17 +291,17 @@ class SelectionSortDrill{
             y: this.nodes[this.numValues-1].y + this.cellHeight + 5
         }))
 
-        this.checkButton = new Button(700, 500, "Check", this.stage);
+        this.checkButton = new Button(700, 500, 200, 100, "Check", this.stage);
         this.checkButton.shapeNode.addEventListener("click", () =>{
             this.check();
         });
 
-        this.resetButton = new Button(400, 500, "New List", this.stage);
+        this.resetButton = new Button(400, 500, 200, 100, "New List", this.stage);
         this.resetButton.shapeNode.addEventListener("click", () =>{
             this.reset();
         });
 
-        this.revertButton = new Button(1000, 500, "Revert", this.stage);
+        this.revertButton = new Button(1000, 500, 200, 100, "Revert", this.stage);
         this.revertButton.shapeNode.addEventListener("click", () =>{
             this.revert();
         });
@@ -290,7 +314,7 @@ class SelectionSortDrill{
     setRectColour(rect, colour){
         rect.graphics.clear()
                      .beginFill(colour)
-                     .drawRect(0, 0, this.cellWidth, this.cellHeight)
+                     .drawRect(0, 0, rect.width, rect.height)
                      .endFill();
         this.stage.update();
     }
@@ -300,7 +324,6 @@ class SelectionSortDrill{
             this.nodes[i].textNode.text = this.steps[this.count-1][i];
         }
         this.stage.update();
-        showInstruction(this.description);
     }
 
     click(event){
@@ -316,7 +339,7 @@ class SelectionSortDrill{
             }
         } else {
             event.target.selected = false;
-            this.setRectColour(event.target, DEFAULT_COLOUR);
+            this.setRectColour(event.target, event.target.baseColour);
             this.select.pop();
         }
         this.stage.update();
@@ -336,8 +359,10 @@ class SelectionSortDrill{
         }
 
         if (correct){
-            let correctNode = this.nodes[this.numValues - this.count];
+            const correctNode = this.nodes[this.numValues - this.count];
             this.count++;
+            this.errorCount = 0;
+            this.toggleHint(false);
 
             this.setRectColour(correctNode.shapeNode, CORRECT_COLOUR);
             correctNode.shapeNode.removeAllEventListeners();
@@ -356,6 +381,9 @@ class SelectionSortDrill{
             this.revert();
             this.promptText.text = "Try Again";
             this.promptText.color = HIGHLIGHT_COLOUR;
+            if (++this.errorCount == 3){
+                this.toggleHint(true);
+            }
         }
 
         this.stage.update();
@@ -373,6 +401,66 @@ class SelectionSortDrill{
         this.drawInitial();
         this.stage.update();
     }
+
+    toggleHint(on){
+        if (on){
+            this.hints.push(new Button(CANVAS_WIDTH-250, 100, 200, 100, "hint", this.stage));
+            this.hints[0].shapeNode.addEventListener("click", () =>{
+                this.giveHint();
+            });
+        } else {
+            this.hints.forEach((e) =>{
+                if (e instanceof Button){
+                    e.clear();
+                }
+                this.stage.removeChild(e);
+            })
+            this.hints = []
+        }
+    }
+
+    giveHint(){
+        var maxValue = 0;
+        var maxIndex = -1;
+        for (let i = 0; i < this.numValues - this.count; i++){
+            if (this.steps[this.count-1][i] > maxValue){
+                maxValue = this.steps[this.count-1][i];
+                maxIndex = i;
+            }
+        }
+        this.hints.push(
+            drawArc(
+                {
+                    x:this.nodes[maxIndex].x + this.cellWidth * 17/20,
+                    y:this.nodes[maxIndex].y - 10
+                },
+                {
+                    x:this.nodes[this.numValues - this.count].x + this.cellWidth * 3/20,
+                    y:this.nodes[this.numValues - this.count].y - 10
+                },
+                15 * (this.numValues - this.count - maxIndex)
+            )
+        );
+        this.hints.push(
+            drawArc(
+                {
+                    x:this.nodes[this.numValues - this.count].x + this.cellWidth*3/20,
+                    y:this.nodes[this.numValues - this.count].y - 10
+                },
+                {
+                    x:this.nodes[maxIndex].x + this.cellWidth * 17/20,
+                    y:this.nodes[maxIndex].y - 10
+                },
+                15 * (this.numValues - this.count - maxIndex),
+                "",
+                true
+            )
+        );
+
+        this.stage.addChild(this.hints[1]);
+        this.stage.addChild(this.hints[2]);
+        this.stage.update();
+    }
 }
 
 class InsertionSortDrill{
@@ -381,8 +469,10 @@ class InsertionSortDrill{
         this.cellWidth = 120;
         this.cellHeight = 120;
         this.count = 1;
+        this.hintCount = 3;
+        this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
-        this.maxSwap = 3;
+        this.maxSwap = 6;
         this.description = "-Sort the list using inesrtion sort, after each " + 
         "iteration click on Check to varify if it was correct.\n\n" + 
         "-Click on two elements to swap them around.\n\n" +
@@ -397,7 +487,7 @@ class InsertionSortDrill{
 
         this.select = [];
         this.nodes = [];
-
+        this.hints = [];
         
         this.drawInitial();
         this.stage.update();
@@ -408,27 +498,27 @@ class InsertionSortDrill{
         var n = 0;
 
         list.sort(function(a, b){return a - b});
+        newList[0] = list[0];
 
-        newList.push(list[this.numValues-1]);
-        for (let i = 0; i < this.numValues-1; i++){
+        for (let i = 1; i < this.numValues; i++){
             let location;
             
-            if (n < -1){
+            if (n < -2){
                 location = 0
-            } else if (n > 1){
-                location = Math.floor(Math.random() * (this.maxSwap - 1)) + 1
+            } else if (n > 2){
+                location = Math.floor(Math.random() * this.maxSwap) + 1
             } else {
-                location = Math.floor(Math.random() * this.maxSwap)
+                location = Math.floor(Math.random() * (this.maxSwap + 1))
             }
 
             if (location == 0){
-                n++;
+                n = n + 2;
             } else {
                 n--;
             }
 
             if (location >= newList.length){
-                newList = newList.toSpliced(1, 0, list[i]);
+                newList = newList.toSpliced(0, 0, list[i]);
             } else {
                 newList = newList.toSpliced(newList.length - location, 0, list[i]);
             }
@@ -459,27 +549,34 @@ class InsertionSortDrill{
 
     swap(t1, t2){
         var temp = t1.parent.textNode.text;
+        var tempColour = t1.baseColour;
 
         t1.parent.textNode.text = t2.parent.textNode.text;
         t2.parent.textNode.text = temp;
 
+        t1.baseColour = t2.baseColour;
+        t2.baseColour = tempColour;
+
         t1.selected = false;
-        this.setRectColour(t1, DEFAULT_COLOUR);
+        this.setRectColour(t1, t1.baseColour);
         
         t2.selected = false;
-        this.setRectColour(t2, DEFAULT_COLOUR);
+        this.setRectColour(t2, t2.baseColour);
     }
 
     drawInitial(){
         for (let i = 0; i < this.numValues; i++){
-            let container = new createjs.Container();
-            let rect = new createjs.Shape();
-            let text = new createjs.Text(...this.font);
+            const container = new createjs.Container();
+            const rect = new createjs.Shape();
+            const text = new createjs.Text(...this.font);
             container.shapeNode = rect;
             container.textNode = text;
             
-            this.setRectColour(rect, DEFAULT_COLOUR);
             rect.selected = false;
+            rect.baseColour = (i == 0)? PARTIAL_COLOUR: DEFAULT_COLOUR;
+            rect.width = this.cellWidth;
+            rect.height = this.cellHeight;
+            this.setRectColour(rect, rect.baseColour);
             container.y = CANVAS_HEIGHT/2 - this.cellHeight/2 - 100; 
             container.x = i * this.cellWidth 
                           + (CANVAS_WIDTH - this.numValues * this.cellWidth)/2;
@@ -507,7 +604,7 @@ class InsertionSortDrill{
             
             rect.addEventListener("mouseout", () => {
                 if (!rect.selected){
-                    this.setRectColour(rect, DEFAULT_COLOUR);
+                    this.setRectColour(rect, rect.baseColour);
                     this.stage.update();
                 }
             });
@@ -526,7 +623,7 @@ class InsertionSortDrill{
         this.iterationText = new createjs.Text("", "50px Arial", "").set({
             text: "Iteration 1",
             x: this.nodes[0].x,
-            y: 120,
+            y: 100,
             lineWidth: 400
         });
         this.stage.addChild(this.iterationText);
@@ -545,17 +642,17 @@ class InsertionSortDrill{
             y: this.nodes[this.numValues-1].y + this.cellHeight + 5
         }))
 
-        this.checkButton = new Button(700, 500, "Check", this.stage);
+        this.checkButton = new Button(700, 500, 200, 100, "Check", this.stage);
         this.checkButton.shapeNode.addEventListener("click", () =>{
             this.check();
         });
 
-        this.resetButton = new Button(400, 500, "New List", this.stage);
+        this.resetButton = new Button(400, 500, 200, 100, "New List", this.stage);
         this.resetButton.shapeNode.addEventListener("click", () =>{
             this.reset();
         });
 
-        this.revertButton = new Button(1000, 500, "Revert", this.stage);
+        this.revertButton = new Button(1000, 500, 200, 100, "Revert", this.stage);
         this.revertButton.shapeNode.addEventListener("click", () =>{
             this.revert();
         });
@@ -568,7 +665,7 @@ class InsertionSortDrill{
     setRectColour(rect, colour){
         rect.graphics.clear()
                      .beginFill(colour)
-                     .drawRect(0, 0, this.cellWidth, this.cellHeight)
+                     .drawRect(0, 0, rect.width, rect.height)
                      .endFill();
         this.stage.update();
     }
@@ -576,6 +673,13 @@ class InsertionSortDrill{
     revert(){
         for (let i = 0; i < this.numValues; i++){
             this.nodes[i].textNode.text = this.steps[this.count-1][i];
+            if (i < this.count){
+                this.nodes[i].shapeNode.baseColour = PARTIAL_COLOUR;
+                this.setRectColour(this.nodes[i].shapeNode, PARTIAL_COLOUR);
+            } else {
+                this.nodes[i].shapeNode.baseColour = DEFAULT_COLOUR;
+                this.setRectColour(this.nodes[i].shapeNode, DEFAULT_COLOUR);
+            }
         }
         this.stage.update();
     }
@@ -593,7 +697,7 @@ class InsertionSortDrill{
             }
         } else {
             event.target.selected = false;
-            this.setRectColour(event.target, DEFAULT_COLOUR);
+            this.setRectColour(event.target, event.target.baseColour);
             this.select.pop();
         }
         this.stage.update();
@@ -606,7 +710,7 @@ class InsertionSortDrill{
 
         var correct = true;
         if (this.select[0]){
-            this.setRectColour(this.select[0], DEFAULT_COLOUR);
+            this.setRectColour(this.select[0], this.select.baseColour);
             this.select[0].selected = false;
             this.select.pop();
         }
@@ -620,26 +724,86 @@ class InsertionSortDrill{
 
         if (correct){
             this.count++;
+            this.errorCount = 0;
+            this.toggleHint(false);
 
             this.promptText.color = CORRECT_COLOUR;
             
             if (this.count == this.numValues){
                 this.nodes.forEach((e) => {
                     this.setRectColour(e.shapeNode, CORRECT_COLOUR);
-                    this.promptText.text = "The list is now sorted.";
                     e.shapeNode.removeAllEventListeners();
                 })
+                this.promptText.text = "The list is now sorted.";
             } else {
                 this.iterationText.text = "Iteration "  + this.count;
                 this.promptText.text = "Correct";
+                for (let i = 0; i < this.count; i++){
+                    this.nodes[i].shapeNode.baseColour = PARTIAL_COLOUR;
+                    this.setRectColour(this.nodes[i].shapeNode, PARTIAL_COLOUR);
+                }
             }
         } else {
             this.revert();
             this.promptText.text = "Try Again";
             this.promptText.color = HIGHLIGHT_COLOUR;
+            if (++this.errorCount == 3){
+                this.toggleHint(true);
+            }
         }
 
         this.stage.update();
+    }
+
+    toggleHint(on){
+        if (on){
+            this.hints.push(new Button(CANVAS_WIDTH-250, 100, 200, 100, "hint", this.stage));
+            this.hints[0].shapeNode.addEventListener("click", () =>{
+                this.giveHint();
+            });
+        } else {
+            this.hints.forEach((e) =>{
+                if (e instanceof Button){
+                    e.clear();
+                }
+                this.stage.removeChild(e);
+            })
+            this.hints = []
+            this.checkButton.changeColour(BUTTON_COLOUR);
+        }
+    }
+
+    giveHint(){
+        var maxIndex = -1;
+        for (let i = 0; i <= this.count; i++){
+            if (this.steps[this.count-1][this.count] == this.steps[this.count][i]){
+                maxIndex = i;
+                break;
+            }
+        }
+        if (maxIndex == this.count){
+            this.checkButton.changeColour(HINT_COLOUR);
+            return;
+        }
+        this.hints.push(
+            drawArc(
+                {
+                    x:this.nodes[this.count].x + this.cellWidth*3/20,
+                    y:this.nodes[this.count].y - 5
+                },
+                {
+                    x:this.nodes[maxIndex].x + this.cellWidth*3/20,
+                    y:this.nodes[maxIndex].y - 10
+                },
+                15 * (this.count - maxIndex),
+                "",
+                true
+            )
+        );
+        
+        this.stage.addChild(this.hints[1]);
+        this.stage.addChild(this.hints[2]);
+        this.revert();
     }
 
     reset(){
@@ -654,6 +818,8 @@ class InsertionSortDrill{
         this.drawInitial();
         this.stage.update();
     }
+
+    
 }
 
 class heapDrill{
@@ -675,8 +841,8 @@ class heapDrill{
         // Draw the binary tree
         for (let i = 0; i < this.height; i++){
             for (let j = 0; j < 1<<i; j++){
-                let container = new createjs.Container();
-                let text = new createjs.Text("", "30px Arial", "");
+                const container = new createjs.Container();
+                const text = new createjs.Text("", "30px Arial", "");
                 text.set({
                     text: (((1<<i) + j) <= this.values.length)
                           ? "" + this.values[((1<<i) + j)-1] : "",
@@ -686,7 +852,7 @@ class heapDrill{
                     y: 0,
                 })
 
-                let circle = new createjs.Shape();
+                const circle = new createjs.Shape();
                 circle.colour = "blue";
                 circle.graphics.beginFill(DEFAULT_COLOUR)
                                .drawCircle(0, 0, 40)
@@ -707,10 +873,10 @@ class heapDrill{
         }
 
         for (let i = 0; i < Math.floor(this.nodes.length/2); i++){
-            let line = new createjs.Shape();
-            let startCoord = [this.nodes[i].x, this.nodes[i].y];
-            let t1Coord = [this.nodes[i*2+1].x, this.nodes[i*2+1].y];
-            let t2Coord = [this.nodes[i*2+2].x, this.nodes[i*2+2].y];
+            const line = new createjs.Shape();
+            const startCoord = [this.nodes[i].x, this.nodes[i].y];
+            const t1Coord = [this.nodes[i*2+1].x, this.nodes[i*2+1].y];
+            const t2Coord = [this.nodes[i*2+2].x, this.nodes[i*2+2].y];
 
             line.graphics
                 .setStrokeStyle(4)
@@ -730,9 +896,9 @@ class heapDrill{
         }
 
         for (let i = 0; i < this.nodes.length; i++){
-            let container = new createjs.Container();
-            let rect = new createjs.Shape();
-            let text = new createjs.Text("", "30px Arial", "");
+            const container = new createjs.Container();
+            const rect = new createjs.Shape();
+            const text = new createjs.Text("", "30px Arial", "");
     
             rect.graphics.beginFill(DEFAULT_COLOUR)
                          .drawRect(0, 0, 50, 50)
@@ -848,11 +1014,11 @@ class DFS{
     }
 
     drawInitial(){
-        var temp = [Math.floor(Math.random()*9)];
+        const temp = [Math.floor(Math.random()*9)];
         var newNum = 0;
         while (this.nodes.length < 5){
             newNum = Math.floor(Math.random()*temp.length);
-            let val = temp[newNum];
+            const val = temp[newNum];
             this.nodes.push(val);
             temp.splice(newNum, 1);
             this.nodePositions[val].children.forEach((e) =>{
@@ -863,7 +1029,7 @@ class DFS{
         }
         
         this.nodes.forEach((e) =>{
-            let pos = this.nodePositions[e];
+            const pos = this.nodePositions[e];
             const node = new createjs.Shape();
             node.colour = "blue";
             node.graphics.beginFill(DEFAULT_COLOUR)
@@ -876,8 +1042,8 @@ class DFS{
         })
         
         this.nodes.forEach((e) =>{
-            let pos = this.nodePositions[e];
-            let connected = false;
+            const pos = this.nodePositions[e];
+            const connected = false;
             while (!connected){
                 pos.children.forEach((child) => {
                     if ((this.nodes.includes(child)) && (Math.random() > 0.5)){
@@ -895,7 +1061,7 @@ class DFS{
 }
 
 function changeAlg(){
-    var selected = document.getElementById("selection");
+    const selected = document.getElementById("selection");
     const DRILL_LIST = {
         "selection": SelectionSortDrill,
         "insertion": InsertionSortDrill,
@@ -933,19 +1099,16 @@ function randomList(size){
     return list;
 }
 
-function drawArc(A, B, value="", reverse=false){
-    const angleA = Math.atan2(B.y - A.y, B.x - A.x) - 10*Math.PI/180;
-    const angleB = Math.atan2(A.y - B.y, A.x - B.x) + 5*Math.PI/180;
+function darkenColour(colour){
+    var hexCode = parseInt(colour.replace(/^#/, ''), 16);
+    hexCode = hexCode - parseInt("1A1A1A", 16);
+    if (hexCode <= 0){
+        return "#000000"
+    }
+    return "#" + hexCode.toString(16);
+}
 
-    const pointA = {
-        x: Math.cos(angleA) * 50 + A.x, // 10 + 40(size of circle) = 50
-        y:Math.sin(angleA) * 50 + A.y
-    };
-    const pointB = {
-        x: Math.cos(angleB) * 60 + B.x, // 20 + 40(size of circle) = 50
-        y:Math.sin(angleB) * 60 + B.y
-    };
-
+function drawArc(pointA, pointB, height=null, value="", reverse=false){
     const container = new createjs.Container();
     const shape = new createjs.Shape();
     const text = new createjs.Text("", "30px Arial", "");
@@ -967,14 +1130,23 @@ function drawArc(A, B, value="", reverse=false){
     const deltaX = pointB.x - pointA.x;
     const deltaY = pointB.y - pointA.y;
     const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
+    var distance;
+    if (height){
+        const a1 = Math.atan2(deltaX/2, height);
+        const a2 = Math.PI - (2 * a1);
+        distance = (deltaX/2)/Math.tan(a2);
+    } else {
+        distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+    
     // Normalize the perpendicular direction
     const perpX = -(deltaY / length) * (reverse? -1:1);
     const perpY = deltaX / length * (reverse? -1:1);
-
+    
     // Calculate the new center for a flatter arc
-    const centerX = perpX * length; // Adjust value for flatness
-    const centerY = perpY * length; // Adjust value for flatness
+    const centerX = perpX * distance; // Adjust value for flatness
+    const centerY = perpY * distance; // Adjust value for flatness
+
 
     // Calculate the radius
     const radius = Math.sqrt(Math.pow(pointA.x - centerX, 2) 
@@ -991,7 +1163,6 @@ function drawArc(A, B, value="", reverse=false){
     shape.graphics.beginFill("black");
     shape.graphics.drawPolyStar(pointB.x, pointB.y, 10, 3 , 0, 
                                 endAngle*180/Math.PI- (reverse?90:-90));
-    shape.graphics.moveTo(0, 0);
     
     text.set({
         text: "" + value,
@@ -1007,19 +1178,30 @@ function drawArc(A, B, value="", reverse=false){
     return(container);
 }
 
+function drawArrow(pointA, pointB, value="",){
+    const container = new createjs.Container();
+    const shape = new createjs.Shape();
+    const text = new createjs.Text("", "30px Arial", "");
+    shape.graphics.setStrokeStyle(4).beginStroke("black");
+    shape.graphics.arc(centerX, centerY, radius, startAngle, endAngle, reverse);
+
+    shape.graphics.beginFill("black");
+    shape.graphics.drawPolyStar(pointB.x, pointB.y, 10, 3 , 0, 
+                                endAngle*180/Math.PI- (reverse?90:-90));
+}
+
 function showInstruction(){
     var height = document.getElementById("canvasContainer").offsetHeight + "px";
     instructionContainer.style.height = height;
-
     instructionContainer.style.display = "flex";
 }
 
 $(function(){
-    var selected = document.getElementById("selection");
-    var value = new URLSearchParams(window.location.search).get("selected")
-    var canvas = document.getElementById("canvas");
-    var close = document.getElementById("x");
-    var height = document.getElementById("canvasContainer").offsetHeight + "px";
+    const selected = document.getElementById("selection");
+    const value = new URLSearchParams(window.location.search).get("selected")
+    const canvas = document.getElementById("canvas");
+    const close = document.getElementById("x");
+    const height = document.getElementById("canvasContainer").offsetHeight + "px";
 
     instructionContainer = document.getElementById("instructionContainer");
     instructions = document.getElementById("instructions");
@@ -1044,4 +1226,5 @@ $(function(){
         var height = document.getElementById("canvasContainer").offsetHeight + "px";
         instructionContainer.style.height = height;
     })
+    darkenColour(BUTTON_COLOUR);
 })
