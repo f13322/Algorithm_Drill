@@ -45,6 +45,13 @@
     margin-bottom: auto;
 }
 
+#instructions {
+    height: 70%;
+    justify-content: start;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
 #x {
     font: 25px Arial;
     align-self: flex-end;
