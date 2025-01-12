@@ -1,6 +1,3 @@
-import * as util from "../util/common.js";
-Object.assign(globalThis, util);
-
 export class QuickSortDrill{
     constructor(){
         this.stageWidth = 1600;

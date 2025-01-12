@@ -1,10 +1,8 @@
-import * as util from "./util/common.js";
-Object.assign(globalThis, util);
-
 import { SelectionSortDrill } from "./drills/SelectionSort.js";
 import { InsertionSortDrill } from "./drills/InsertionSort.js";
 import { MergeDrill } from "./drills/Merge.js";
 import { QuickSortDrill } from "./drills/QuickSort.js";
+import { DFS } from "./drills/DFS.js"
 
 const DRILL_NAMES = {
     "Selection Sort": "selection",
@@ -187,73 +185,6 @@ class heapDrill{
                                   .endFill();
             this.select.pop();
         }
-        this.stage.update();
-    }
-}
-
-class DFS{
-    constructor(){
-        this.stage = new createjs.Stage("canvas");
-        this.nodePositions = [
-            { x: 800, y: 50, value: 0, children: [1, 2]},
-            { x: 450, y: 200, value: 1, children: [0, 3, 4, 6]},
-            { x: 1150, y: 200, value: 2, children: [0, 4, 5, 7]},
-            { x: 100, y: 350, value: 3, children: [1, 6]},
-            { x: 800, y: 350, value: 4, children: [1, 2, 6, 7]},
-            { x: 1500, y: 350, value: 5, children: [2, 7]},
-            { x: 450, y: 500, value: 6, children: [1, 3, 4, 8]},
-            { x: 1150, y: 500, value: 7, children: [2, 4, 5, 8]},
-            { x: 800, y: 650, value: 8, children: [6, 7]}
-        ]
-        this.nodes = [];
-        
-
-        this.drawInitial();
-    }
-
-    drawInitial(){
-        const temp = [Math.floor(Math.random()*9)];
-        var newNum = 0;
-        while (this.nodes.length < 5){
-            newNum = Math.floor(Math.random()*temp.length);
-            const val = temp[newNum];
-            this.nodes.push(val);
-            temp.splice(newNum, 1);
-            this.nodePositions[val].children.forEach((e) =>{
-                if (!this.nodes.includes(e) && !temp.includes(e)){
-                    temp.push(e);
-                };
-            })
-        }
-        
-        this.nodes.forEach((e) =>{
-            const pos = this.nodePositions[e];
-            const node = new createjs.Shape();
-            node.colour = "blue";
-            node.graphics.beginFill(DEFAULT_COLOUR)
-            .drawCircle(0, 0, 40)
-            .endFill();
-            
-            node.x = pos.x;
-            node.y = pos.y;
-            this.stage.addChild(node);
-        })
-        
-        this.nodes.forEach((e) =>{
-            const pos = this.nodePositions[e];
-            let connected = false;
-            while (!connected){
-                pos.children.forEach((child) => {
-                    if ((this.nodes.includes(child)) && (Math.random() > 0.5)){
-                        this.stage.addChild(drawArc(
-                            pos, this.nodePositions[child], null, 
-                            Math.floor(Math.random() * 10) + 1 + ""));
-                        connected = true;
-                    }})
-                }
-            })
-        
-
         this.stage.update();
     }
 }

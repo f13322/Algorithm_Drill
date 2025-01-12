@@ -1,12 +1,12 @@
-export const HIGHLIGHT_COLOUR = "#ff5555";
-export const DEFAULT_COLOUR = "#55ddff";
-export const CORRECT_COLOUR = "#8fd102";
-export const PARTIAL_COLOUR = "#34ffcd";
-export const HINT_COLOUR = "#FAEF59";
-export const BUTTON_COLOUR = "#D3D3D3";
+const HIGHLIGHT_COLOUR = "#ff5555";
+const DEFAULT_COLOUR = "#55ddff";
+const CORRECT_COLOUR = "#8fd102";
+const PARTIAL_COLOUR = "#34ffcd";
+const HINT_COLOUR = "#FAEF59";
+const BUTTON_COLOUR = "#D3D3D3";
 
 
-export class InstructionIcon{
+class InstructionIcon{
     constructor(stage){
         this.stage = stage
         this.container = new createjs.Container();
@@ -55,7 +55,7 @@ export class InstructionIcon{
     }
 }
 
-export class Rect{
+class Rect{
     constructor(x, y, width, height, stage, text="", colour=DEFAULT_COLOUR){
         this.font = ["", "40px Arial", ""];
         this.container = new createjs.Container();
@@ -134,9 +134,100 @@ export class Rect{
         this.container.x = this.container.x + x;
         this.container.y = this.container.y + y;
     }
+
+    set(x, y){
+        this.container.x = x;
+        this.container.y = y;
+    }
 }
 
-export class Button extends Rect{
+class Circle{
+    constructor(x, y, radius, stage, text="", colour=DEFAULT_COLOUR){
+        this.font = ["", "40px Arial", ""];
+        this.container = new createjs.Container();
+        this.width = radius;
+        this.height = radius;
+        this.colour = colour
+
+        this.stage = stage;
+
+        this.shapeNode = new createjs.Shape();
+        this.shapeNode.baseColour = colour;
+        this.shapeNode.width = radius;
+        this.shapeNode.height = radius;
+        this.shapeNode.selected = false;
+        
+        this.textNode = new createjs.Text(...this.font);
+        this.container.addChild(this.shapeNode);
+        this.container.addChild(this.textNode);
+        
+        this.textNode.set(
+            {
+                text: text,
+                textAlign:"center",
+                textBaseline: "middle",
+                x: radius/2,
+                y: radius/2,
+            }
+        )
+        
+        this.shapeNode.graphics.beginFill(colour)
+        .drawCircle(0, 0, radius)
+        .endFill();
+        this.activate();
+        
+        this.container.x = x;
+        this.container.y = y;
+        this.container.shapeNode = this.shapeNode;
+        this.container.textNode = this.textNode;
+        this.stage.addChild(this.container);
+
+        this.shapeNode.object = this;
+        this.textNode.object = this;
+        this.container.object = this;
+    }
+
+    changeColour(colour){
+        this.colour = colour;
+        this.shapeNode.baseColour = colour;
+        this.shapeNode
+            .graphics.clear()
+                .beginFill(this.colour)
+                .drawCircle(0, 0, this.radius)
+                .endFill();
+        this.stage.update();
+    }
+
+    activate(){
+        this.shapeNode.addEventListener("mouseover", () => {
+            setCircleColour(this.shapeNode, HIGHLIGHT_COLOUR);
+            this.stage.update();
+        });
+        
+        this.shapeNode.addEventListener("mouseout", () => {
+            if (!this.shapeNode.selected){
+                setCircleColour(this.shapeNode, this.shapeNode.baseColour);
+                this.stage.update();
+            }
+        });
+    }
+
+    clear(){
+        this.stage.removeChild(this.container);
+    }
+
+    move(x, y){
+        this.container.x = this.container.x + x;
+        this.container.y = this.container.y + y;
+    }
+
+    set(x, y){
+        this.container.x = x;
+        this.container.y = y;
+    }
+}
+
+class Button extends Rect{
     constructor(x, y, width, height, stage, text="", colour=BUTTON_COLOUR){
         super(x, y, width, height, stage, text, colour)
         this.textNode.set(
@@ -172,7 +263,7 @@ export class Button extends Rect{
     }
 }
 
-export function randomList(size){
+function randomList(size){
     // Generate list of distinct values between 1 and 100 inclusive.
     if (size > 100){
         console.error("Error: Random List size should be less than 100")
@@ -188,14 +279,21 @@ export function randomList(size){
     return list;
 }
 
-export function setRectColour(rect, colour){
+function setRectColour(rect, colour){
     rect.graphics.clear()
                  .beginFill(colour)
                  .drawRect(0, 0, rect.width, rect.height)
                  .endFill();
 }
 
-export function darkenColour(colour){
+function setCircleColour(circle, colour){
+    circle.graphics.clear()
+                 .beginFill(colour)
+                 .drawCircle(0, 0, circle.radius)
+                 .endFill();
+}
+
+function darkenColour(colour){
     var hexCode = parseInt(colour.replace(/^#/, ''), 16);
     hexCode = hexCode - parseInt("1A1A1A", 16);
     if (hexCode <= 0){
@@ -204,7 +302,7 @@ export function darkenColour(colour){
     return "#" + hexCode.toString(16);
 }
 
-export function drawArc(pointA, pointB, height=null, value="", reverse=false){
+function drawArc(pointA, pointB, height=null, value="", reverse=false){
     const container = new createjs.Container();
     const shape = new createjs.Shape();
     const text = new createjs.Text("", "30px Arial", "");
@@ -274,7 +372,7 @@ export function drawArc(pointA, pointB, height=null, value="", reverse=false){
     return(container);
 }
 
-export function drawArrow(pointA, pointB, value="",){
+function drawArrow(pointA, pointB, value="",){
     const container = new createjs.Container();
     const shape = new createjs.Shape();
     const text = new createjs.Text("", "30px Arial", "");
@@ -286,7 +384,7 @@ export function drawArrow(pointA, pointB, value="",){
                                 endAngle*180/Math.PI- (reverse?90:-90));
 }
 
-export function swapRect(n1, n2){
+function swapRect(n1, n2){
     var temp = n1.parent.textNode.text;
     var tempColour = n1.baseColour;
 
@@ -303,7 +401,7 @@ export function swapRect(n1, n2){
     setRectColour(n2, n2.baseColour);
 }
 
-export function showInstruction(){
+function showInstruction(){
     var height = document.getElementById("canvasContainer").offsetHeight + "px";
     instructionContainer.style.height = height;
     instructionContainer.style.display = "flex";
