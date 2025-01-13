@@ -59,6 +59,8 @@ class Rect{
     constructor(x, y, width, height, stage, text="", colour=DEFAULT_COLOUR){
         this.font = ["", "40px Arial", ""];
         this.container = new createjs.Container();
+        this.x = x;
+        this.y = y;
         this.width = width;
         this.height = height;
         this.colour = colour
@@ -133,11 +135,15 @@ class Rect{
     move(x, y){
         this.container.x = this.container.x + x;
         this.container.y = this.container.y + y;
+        this.x = this.x + x;
+        this.y = this.y + y;
     }
 
     set(x, y){
         this.container.x = x;
         this.container.y = y;
+        this.x = x;
+        this.y = y;
     }
 }
 
@@ -145,6 +151,9 @@ class Circle{
     constructor(x, y, radius, stage, text="", colour=DEFAULT_COLOUR){
         this.font = ["", "40px Arial", ""];
         this.container = new createjs.Container();
+        this.radius = radius;
+        this.x = x;
+        this.y = y;
         this.width = radius;
         this.height = radius;
         this.colour = colour
@@ -166,8 +175,8 @@ class Circle{
                 text: text,
                 textAlign:"center",
                 textBaseline: "middle",
-                x: radius/2,
-                y: radius/2,
+                // x: radius/2,
+                // y: radius/2,
             }
         )
         
@@ -219,11 +228,15 @@ class Circle{
     move(x, y){
         this.container.x = this.container.x + x;
         this.container.y = this.container.y + y;
+        this.x = this.x + x;
+        this.y = this.y + y;
     }
 
     set(x, y){
         this.container.x = x;
         this.container.y = y;
+        this.x = x;
+        this.y = y;
     }
 }
 
@@ -303,26 +316,28 @@ function darkenColour(colour){
 }
 
 function drawArc(pointA, pointB, height=null, value="", reverse=false){
+    const source = {x: pointA.x, y: pointA.y}
+    const target = {x: pointB.x, y: pointB.y}
     const container = new createjs.Container();
     const shape = new createjs.Shape();
     const text = new createjs.Text("", "30px Arial", "");
 
     // Calculate the midpoint
-    const midX = (pointA.x + pointB.x) / 2;
-    const midY = (pointA.y + pointB.y) / 2;
+    const midX = (source.x + target.x) / 2;
+    const midY = (source.y + target.y) / 2;
 
     container.x = midX;
     container.y = midY;
 
-    pointA.x = pointA.x - midX;
-    pointA.y = pointA.y - midY;
+    source.x = source.x - midX;
+    source.y = source.y - midY;
     
-    pointB.x = pointB.x - midX;
-    pointB.y = pointB.y - midY;
+    target.x = target.x - midX;
+    target.y = target.y - midY;
 
     // Calculate the perpendicular offset for a flatter arc
-    const deltaX = pointB.x - pointA.x;
-    const deltaY = pointB.y - pointA.y;
+    const deltaX = target.x - source.x;
+    const deltaY = target.y - source.y;
     const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     var distance;
     if (height){
@@ -343,19 +358,19 @@ function drawArc(pointA, pointB, height=null, value="", reverse=false){
 
 
     // Calculate the radius
-    const radius = Math.sqrt(Math.pow(pointA.x - centerX, 2) 
-                   + Math.pow(pointA.y - centerY, 2));
+    const radius = Math.sqrt(Math.pow(source.x - centerX, 2) 
+                   + Math.pow(source.y - centerY, 2));
 
     // Calculate the angles
-    const startAngle = Math.atan2(pointA.y - centerY, pointA.x - centerX);
-    const endAngle = Math.atan2(pointB.y - centerY, pointB.x - centerX);
+    const startAngle = Math.atan2(source.y - centerY, source.x - centerX);
+    const endAngle = Math.atan2(target.y - centerY, target.x - centerX);
 
     // Draw the arc
     shape.graphics.setStrokeStyle(4).beginStroke("black");
     shape.graphics.arc(centerX, centerY, radius, startAngle, endAngle, reverse);
 
     shape.graphics.beginFill("black");
-    shape.graphics.drawPolyStar(pointB.x, pointB.y, 10, 3 , 0, 
+    shape.graphics.drawPolyStar(target.x, target.y, 10, 3 , 0, 
                                 endAngle*180/Math.PI- (reverse?90:-90));
     
     text.set({
@@ -372,16 +387,12 @@ function drawArc(pointA, pointB, height=null, value="", reverse=false){
     return(container);
 }
 
-function drawArrow(pointA, pointB, value="",){
+function drawArrow(source, target, value="",){
     const container = new createjs.Container();
     const shape = new createjs.Shape();
     const text = new createjs.Text("", "30px Arial", "");
     shape.graphics.setStrokeStyle(4).beginStroke("black");
-    shape.graphics.arc(centerX, centerY, radius, startAngle, endAngle, reverse);
 
-    shape.graphics.beginFill("black");
-    shape.graphics.drawPolyStar(pointB.x, pointB.y, 10, 3 , 0, 
-                                endAngle*180/Math.PI- (reverse?90:-90));
 }
 
 function swapRect(n1, n2){
