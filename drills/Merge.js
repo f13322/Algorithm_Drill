@@ -142,7 +142,6 @@ export class MergeDrill{
     }
 
     check(target){
-        
         if (this.count == this.numValues){
             return;
         }

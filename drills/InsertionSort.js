@@ -8,6 +8,7 @@ export class InsertionSortDrill{
         this.count = 1;
         this.hintCount = 3;
         this.errorCount = 0;
+        this.hinting = false;
         this.font = ["", "50px Arial", ""]
         this.maxSwap = 6;
         this.description = "-Sort the list using inesrtion sort, after each " + 
@@ -118,7 +119,7 @@ export class InsertionSortDrill{
         this.iterationText = new createjs.Text("", "50px Arial", "").set({
             text: "Iteration 1",
             x: this.nodes[0].x - 100,
-            y: 100,
+            y: 90,
             lineWidth: 400
         });
         this.stage.addChild(this.iterationText);
@@ -168,6 +169,14 @@ export class InsertionSortDrill{
                 setRectColour(this.nodes[i].shapeNode, DEFAULT_COLOUR);
             }
         }
+
+        if (this.hints.length == 2){
+            this.stage.removeChild(this.hints.pop());
+        }
+        if (this.hinting){
+            this.giveHint();
+        }
+
         this.stage.update();
     }
 
@@ -179,6 +188,12 @@ export class InsertionSortDrill{
             if (this.select.length == 1){
                 swapRect(event.target, this.select[0]);
                 this.select.pop();
+                if (this.hints.length == 2){
+                    this.stage.removeChild(this.hints.pop());
+                }
+                if (this.hinting){
+                    this.giveHint();
+                }
             }
             else {
                 this.select.push(event.target);
@@ -249,9 +264,12 @@ export class InsertionSortDrill{
                 this.stageWidth-250, 100, 200, 100, this.stage, "hint"
             ));
             this.hints[0].shapeNode.addEventListener("click", () =>{
+                this.revert();
                 this.giveHint();
+                this.hinting = true;
             });
         } else {
+            this.hinting = false;
             this.hints.forEach((e) =>{
                 if (e instanceof Button){
                     e.clear();
@@ -264,36 +282,51 @@ export class InsertionSortDrill{
     }
 
     giveHint(){
-        var maxIndex = -1;
+        var targetIndex = -1;
+
         for (let i = 0; i <= this.count; i++){
             if (this.steps[this.count-1][this.count] == this.steps[this.count][i]){
-                maxIndex = i;
+                targetIndex = i;
                 break;
             }
         }
-        if (maxIndex == this.count){
+
+        var sourceIndex = 0;
+        for (let i = 0; i < this.nodes.length; i++){
+            if (this.steps[this.count-1][this.count] == this.nodes[i].textNode.text){
+                sourceIndex = i;
+                break;
+            }
+        }
+
+        if (targetIndex == sourceIndex){
             this.checkButton.changeColour(HINT_COLOUR);
             return;
+        } else {
+            this.checkButton.changeColour(BUTTON_COLOUR);
         }
+
+        this.addArc(sourceIndex, targetIndex);
+        this.stage.update();
+    }
+
+    addArc(sourceIndex, targetIndex){
         this.hints.push(
             drawArc(
                 {
-                    x:this.nodes[this.count].x + this.cellWidth*3/20,
-                    y:this.nodes[this.count].y - 5
+                    x:this.nodes[sourceIndex].x + this.cellWidth*2/10,
+                    y:this.nodes[sourceIndex].y - 5
                 },
                 {
-                    x:this.nodes[maxIndex].x + this.cellWidth*3/20,
-                    y:this.nodes[maxIndex].y - 10
+                    x:this.nodes[targetIndex].x + this.cellWidth*2/10,
+                    y:this.nodes[targetIndex].y - 10
                 },
-                15 * (this.count - maxIndex),
+                15 * Math.abs(this.sourceIndex - targetIndex),
                 "",
                 true
             )
-        );
-        
+        )
         this.stage.addChild(this.hints[1]);
-        this.stage.addChild(this.hints[2]);
-        this.revert();
     }
 
     reset(){

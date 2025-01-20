@@ -2,51 +2,105 @@ export class heapDrill{
     constructor(){
         this.stageWidth = 1600;
         this.stageHeight = 700;
+        this.circleSize = 40;
         this.height = 4;
+        this.hintCount = 3;
+        this.errorCount = 0;
+        this.values = this.heapify(randomList(4));
+        this.count = 0;
+        this.description = "-Restore the heap after inserting or deleting a " + 
+        "value step by step, each step will be varified automatically\n\n " +
+        "-Click on two elements to swap them around.\n\n"
+        
         this.stage = new createjs.Stage("canvas");
-        this.values = randomList(8);
+        this.stage.width = this.stageWidth;
+        this.stage.height = this.stageHeight;
+        this.stage.enableMouseOver();
+
+        this.insertButton = null;
+        this.deleteButton = null;
 
         this.nodes = [];
         this.lines = [];
         this.select = [];
         this.list =  [];
+        this.steps = [];
+        this.hints = [];
 
         this.drawInitial();
         this.stage.update();
+    }
+
+    heapify(list){
+        for (let i = Math.floor(list.length/2)  -1; i >= 0; i--){
+            this.percolateDown(list, i);
+        }
+        return list;
+    }
+
+    percolateDown(list, i){
+        const leftIndex = 2*i + 1;
+        const rightIndex = leftIndex + 1;
+        
+        if ((rightIndex < list.length) 
+            && (list[i] < list[rightIndex]) 
+            && (list[leftIndex] < list[rightIndex])){
+                const temp = list[i];
+                const original = list.slice();
+
+                list[i] = list[rightIndex];
+                list[rightIndex] = temp;
+
+                const arr = this.percolateDown(list, rightIndex);
+                arr.unshift(original);
+                return arr;
+        } else if ((leftIndex < list.length) && (list[i] < list[leftIndex])){
+            const temp = list[i];
+            const original = list.slice();
+            list[i] = list[leftIndex];
+            list[leftIndex] = temp;
+
+            const arr = this.percolateDown(list, leftIndex);
+            arr.unshift(original);
+            return arr;
+        }
+
+        return [list.slice()];
+    }
+
+    percolateUp(list, i){
+        const arr = [list.slice()];
+        var parentIndex = Math.ceil(i/2)-1;
+        var currentIndex = i;
+        while((currentIndex != 0) && (list[currentIndex] > list[parentIndex])){
+            const temp = list[parentIndex];
+            list[parentIndex] = list[currentIndex];
+            list[currentIndex] = temp;
+            currentIndex = parentIndex;
+            parentIndex = Math.ceil(currentIndex/2) - 1
+            arr.push(list.slice());
+        }
+        return arr;
     }
 
     drawInitial(){
         // Draw the binary tree
         for (let i = 0; i < this.height; i++){
             for (let j = 0; j < 1<<i; j++){
-                const container = new createjs.Container();
-                const text = new createjs.Text("", "30px Arial", "");
-                text.set({
-                    text: (((1<<i) + j) <= this.values.length)
-                          ? "" + this.values[((1<<i) + j)-1] : "",
-                    textAlign:"center",
-                    textBaseline: "middle",
-                    x: 0,
-                    y: 0,
-                })
+                const circle = new Circle(
+                    this.circleSize * 4 * j * (1<<(this.height-1-i)) 
+                    + ((1<<(this.height-1-i)) - (1<<(this.height-1))) * this.circleSize * 2
+                    + this.stageWidth/2,
+                    this.circleSize * 2*i + 80,
+                    this.circleSize,
+                    this.stage,
+                    (((1<<i) + j) <= this.values.length)? 
+                        "" + this.values[((1<<i) + j)-1] : ""
+                )
+                circle.shapeNode.removeAllEventListeners(); 
+                circle.setFontSize(this.circleSize);
 
-                const circle = new createjs.Shape();
-                circle.colour = "blue";
-                circle.graphics.beginFill(DEFAULT_COLOUR)
-                               .drawCircle(0, 0, 40)
-                               .endFill();
-                circle.addEventListener("click", (evt) =>
-                    this.click(evt)
-                );
-
-                container.x = 160*j*(1<<(this.height-1-i)) 
-                              + ((1<<(this.height-1-i)) - 1) * 80 + 250;
-                container.y = 100*i + 100;
-
-                container.addChild(circle);
-                container.addChild(text);
-                this.stage.addChild(container);
-                this.nodes.push(container)
+                this.nodes.push(circle.container);
             }
         }
 
@@ -73,100 +127,258 @@ export class heapDrill{
             this.stage.addChildAt(line, 0);
         }
 
+        const rectSize = 70;
         for (let i = 0; i < this.nodes.length; i++){
-            const container = new createjs.Container();
-            const rect = new createjs.Shape();
-            const text = new createjs.Text("", "30px Arial", "");
-    
-            rect.graphics.beginFill(DEFAULT_COLOUR)
-                         .drawRect(0, 0, 50, 50)
-                         .endFill();
-            rect.selected = false;
-            container.y = 500; 
-            container.x = i*50 + 200;
-    
-            text.set({
-                text: "" + this.nodes[i].children[1].text,
-                textAlign:"center",
-                textBaseline: "middle",
-                x: 25,
-                y: 25,
-            })
-    
-            container.addChild(rect);
-            container.addChild(text);
-            this.stage.addChild(container)
-            this.list.push(container);
+            const rect = new Rect(
+                i*rectSize + this.stageWidth/2 - this.nodes.length * rectSize/2,
+                400,
+                rectSize,
+                rectSize,
+                this.stage,
+                "" + this.nodes[i].children[1].text,
+            )
+
+            rect.setFontSize(35);
+            rect.shapeNode.removeAllEventListeners();
+
+            this.list.push(rect.container);
         }
+
+        this.promptText = new createjs.Text("", "bold 50px Arial", "").set({
+            text: "",
+            textAlign: "center",
+            x: this.stageWidth/2,
+            y: 500,
+            lineWidth: 400
+        });
+        this.stage.addChild(this.promptText);
+
+        new InstructionIcon(this.stage);
+
+
+        this.toggleButtons(true);
     }
 
     swap(t1, t2){
-        var temp = t1.parent.children[1].text;
-        var l1 = this.list[this.nodes.indexOf(t1.parent)];
-        var l2 = this.list[this.nodes.indexOf(t2.parent)];
-        
-        // Update the text value of node and list
-        t1.parent.children[1].text = t2.parent.children[1].text;
-        l1.children[1].text = t2.parent.children[1].text;
-
-        t2.parent.children[1].text = temp;
-        l2.children[1].text = temp;
-
-        // Reset selected node colour
-        t1.selected = false;
-        t1.graphics.clear()
-                   .beginFill(DEFAULT_COLOUR)
-                   .drawCircle(0, 0, 40)
-                   .endFill();
-        l1.children[0].graphics.beginFill(DEFAULT_COLOUR)
-                               .drawRect(0, 0, 50, 50)
-                               .endFill();
-        
-        t2.selected = false;
-        t2.graphics.clear()
-                   .beginFill(DEFAULT_COLOUR)
-                   .drawCircle(0, 0, 40)
-                   .endFill();
-        l2.children[0].graphics.beginFill(DEFAULT_COLOUR)
-                               .drawRect(0, 0, 50, 50)
-                               .endFill();
+        const l1 = this.list[this.nodes.indexOf(t1.parent)].shapeNode;
+        const l2 = this.list[this.nodes.indexOf(t2.parent)].shapeNode;
+        swapCircle(t1, t2);
+        swapRect(l1, l2);
     }
 
     click(event){
+        const nodeIndex = this.nodes.indexOf(event.target.parent);
         if (!event.target.selected){
-            // Select node
-            event.target.selected = true;
-            event.target.graphics.beginFill(HIGHLIGHT_COLOUR)
-                                 .drawCircle(0, 0, 40, 40)
-                                 .endFill();
-
-            this.list[
-                this.nodes.indexOf(event.target.parent)
-            ].children[0].graphics.beginFill(HIGHLIGHT_COLOUR)
-                                  .drawRect(0, 0, 50, 50)
-                                  .endFill();
-
             // Swap node if there is another selected node
             if (this.select.length == 1){
-                this.swap(event.target, this.select[0]);
+                this.check(event.target);
                 this.select.pop();
             }
             else {
+                // Select node
+                event.target.selected = true;
+                setCircleColour(event.target, HIGHLIGHT_COLOUR)
+    
+                if (nodeIndex != -1){
+                    setRectColour(
+                        this.list[this.nodes.indexOf(event.target.parent)].shapeNode, 
+                        HIGHLIGHT_COLOUR
+                    );
+                }
+
                 this.select.push(event.target);
             }
         } else {
             // Deselect node
             event.target.selected = false;
-            event.target.graphics.beginFill(DEFAULT_COLOUR)
-                                 .drawCircle(0, 0, 40, 40)
-                                 .endFill();
-            this.list[
-                this.nodes.indexOf(event.target.parent)
-            ].children[0].graphics.beginFill(DEFAULT_COLOUR)
-                                  .drawRect(0, 0, 50, 50)
-                                  .endFill();
+            setCircleColour(event.target, DEFAULT_COLOUR)
+
+            if (nodeIndex != -1){
+                setRectColour(
+                    this.list[this.nodes.indexOf(event.target.parent)].shapeNode, 
+                    DEFAULT_COLOUR)
+            }
             this.select.pop();
         }
         this.stage.update();
     }
+
+    check(target){
+        const temp = target.object.textNode.text;
+        target.object.textNode.text = this.select[0].object.textNode.text;
+        this.select[0].object.textNode.text = temp;
+
+        const nodeIndex = this.nodes.indexOf(this.select[0].parent);
+        this.select[0].selected = false;
+        setCircleColour(this.select[0], this.select[0].baseColour);
+        if (nodeIndex != -1){
+            setRectColour(
+                this.list[nodeIndex].shapeNode, 
+                DEFAULT_COLOUR)
+        }
+        this.stage.update();
+
+        for (let i = 0; i < this.values.length; i++){
+            if (this.steps[this.count][i] != this.nodes[i].textNode.text){
+                this.incorrect();
+                this.select[0].object.textNode.text = target.object.textNode.text;
+                target.object.textNode.text = temp;
+                return
+            }
+        }
+
+        this.correct();
+
+        for (let i = 0; i < this.list.length; i++){
+            this.list[i].textNode.text = this.nodes[i].textNode.text;
+        }
+        
+        if (++this.count >= this.steps.length){
+            if (this.addNode){
+                this.addNode.clear();
+                this.addNode = null;
+            }
+            this.toggleButtons(true);
+        }
+    }
+
+    addValue(){
+        var value;
+
+        do {
+            value = Math.floor(Math.random() * 100) + 1;
+        } while (this.values.indexOf(value) != -1);
+
+        this.addNode = new Circle(
+            this.stageWidth/2,
+            600,
+            this.circleSize,
+            this.stage,
+            value
+        )
+
+        this.values.push(value);
+        this.steps = this.percolateUp(this.values, this.values.length-1);
+        this.count = 0;
+
+        this.addNode.shapeNode.addEventListener("click", (event) => {
+            this.click(event);
+        })
+
+        this.nodes.forEach((e) => {
+            e.shapeNode.addEventListener("click", (event) => {
+                this.click(event);
+            });
+            e.object.activate();
+        })
+
+        this.stage.update();
+    }
+
+    removeValue(){
+        this.nodes[0].textNode.text = "";
+        this.list[0].textNode.text = "";
+
+        if (this.values.length <= 1){
+            this.values = [];
+            this.toggleButtons(true);
+            return;
+        }
+
+        this.values[0] = this.values.pop();
+        this.steps = this.percolateDown(this.values, 0);
+        this.count = 0;
+
+
+        this.nodes.forEach((e) => {
+            e.shapeNode.addEventListener("click", (event) => {
+                this.click(event);
+            });
+            e.object.activate();
+        })
+
+        this.stage.update();
+    }
+
+    correct(){
+        this.promptText.color = CORRECT_COLOUR;
+        this.errorCount = 0;
+        this.toggleHint(false);     
+        this.promptText.text = "Correct";
+        this.nodes.forEach((e) => e.object.changeColour(DEFAULT_COLOUR));
+    }
+
+    incorrect(){
+        this.promptText.text = "Try Again";
+        this.promptText.color = HIGHLIGHT_COLOUR;
+    
+        if (++this.errorCount == this.hintCount){
+            this.toggleHint(true);
+        }
+    }
+
+    toggleButtons(on){
+        if (on){
+            if (this.values.length < this.nodes.length){
+                this.insertButton = new Button(
+                    this.stageWidth/2 - 400, 600, 300, 100, this.stage, "Add Value"
+                );
+                
+                this.insertButton.shapeNode.addEventListener("click", () =>{
+                    this.toggleButtons(false);
+                    this.promptText.text = "";
+                    this.addValue();
+                })
+            }
+            
+            if (this.values.length > 0){
+                this.deleteButton = new Button(
+                    this.stageWidth/2 + 100, 600, 300, 100, this.stage, "Remove Value"
+                )
+    
+                this.deleteButton.shapeNode.addEventListener("click", () => {
+                    this.toggleButtons(false);
+                    this.promptText.text = "";
+                    this.removeValue();
+                })
+            }
+
+            this.nodes.forEach((e) => {
+                e.shapeNode.removeAllEventListeners();
+                setCircleColour(e.shapeNode, DEFAULT_COLOUR);
+            })
+
+        } else {
+            this.insertButton.clear();
+            this.deleteButton.clear();
+        }
+    }
+
+    toggleHint(on){
+        if (on){
+            this.hints.push(new Button(this.stageWidth-210, 100, 200, 100, this.stage, "hint"));
+            this.hints[0].shapeNode.addEventListener("click", () =>{
+                this.giveHint();
+            });
+        } else {
+            this.hints.forEach((e) =>{
+                if (e instanceof Button){
+                    e.clear();
+                }
+                this.stage.removeChild(e);
+            })
+            this.hints = []
+        }
+    }
+
+    giveHint(){
+        console.log("HINT");
+        for (let i = 0; i < this.steps[this.count].length; i++){
+            if (this.steps[this.count][i] != this.nodes[i].textNode.text){
+                this.nodes[i].object.changeColour(HINT_COLOUR);
+            }
+        }
+        this.stage.update();
+    }
+
 }

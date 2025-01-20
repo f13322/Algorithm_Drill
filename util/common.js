@@ -10,7 +10,7 @@ class InstructionIcon{
     constructor(stage){
         this.stage = stage
         this.container = new createjs.Container();
-        this.container.x = stage.width- 40;
+        this.container.x = this.stage.width- 40;
         this.container.y = 40;
 
         this.shape = new createjs.Shape();
@@ -56,8 +56,9 @@ class InstructionIcon{
 }
 
 class Rect{
-    constructor(x, y, width, height, stage, text="", colour=DEFAULT_COLOUR){
-        this.font = ["", "40px Arial", ""];
+    constructor(x, y, width, height, stage, text="", colour=DEFAULT_COLOUR, fontSize=40){
+
+        this.font = ["", fontSize + "px Arial", ""];
         this.container = new createjs.Container();
         this.x = x;
         this.y = y;
@@ -132,6 +133,10 @@ class Rect{
         this.stage.removeChild(this.container);
     }
 
+    setFontSize(size){
+        this.textNode.set({font: size + "px Arial"});
+    }
+
     move(x, y){
         this.container.x = this.container.x + x;
         this.container.y = this.container.y + y;
@@ -162,6 +167,7 @@ class Circle{
 
         this.shapeNode = new createjs.Shape();
         this.shapeNode.baseColour = colour;
+        this.shapeNode.radius = radius;
         this.shapeNode.width = radius;
         this.shapeNode.height = radius;
         this.shapeNode.selected = false;
@@ -221,6 +227,10 @@ class Circle{
         });
     }
 
+    setFontSize(size){
+        this.textNode.set({font: size + "px Arial"});
+    }
+
     clear(){
         this.stage.removeChild(this.container);
     }
@@ -248,8 +258,8 @@ class Button extends Rect{
                 text: text,
                 textAlign:"center",
                 textBaseline: "middle",
-                x: 100,
-                y: 50,
+                x: width/2,
+                y: height/2,
             }
         )
         this.shapeNode.addEventListener("mouseover", () =>{
@@ -410,6 +420,23 @@ function swapRect(n1, n2){
     
     n2.selected = false;
     setRectColour(n2, n2.baseColour);
+}
+
+function swapCircle(n1, n2){
+    var temp = n1.parent.textNode.text;
+    var tempColour = n1.baseColour;
+
+    n1.parent.textNode.text = n2.parent.textNode.text;
+    n2.parent.textNode.text = temp;
+
+    n1.baseColour = n2.baseColour;
+    n2.baseColour = tempColour;
+
+    n1.selected = false;
+    setCircleColour(n1, n1.baseColour);
+    
+    n2.selected = false;
+    setCircleColour(n2, n2.baseColour);
 }
 
 function showInstruction(){

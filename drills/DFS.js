@@ -37,36 +37,19 @@ export class DFS{
         .force('center', d3.forceCenter(this.stageWidth/2, this.stageHeight/2).strength(0.1))  // Setting the center of the layout (e.g., 300x300 canvas size)
         .force("collide", d3.forceCollide((d) => d.radius*2))
         .force("boundary", forceBoundary(0, 0, 1600, 700))
-        .on('tick', () => this.draw(this.nodes, links));  // Run the simulation and update positions
+        // .on('end', () => this.draw(this.nodes, links))  // Run the simulation and update positions
+        .stop();
         this.simulation.parent = this;
+
+        this.simulation.tick(Math.ceil(Math.log(
+            this.simulation.alphaMin()) / Math.log(1 - this.simulation.alphaDecay())));
+
 
         this.line = new createjs.Shape();
         
         this.stage.addChild(this.line);
 
-        this.nodes.forEach((e) => {
-            e.container.on("pressmove", (evt) =>
-                {
-                    console.log(1);
-                    // evt.currentTarget.object.set(evt.stageX, evt.stageY);
-                    evt.currentTarget.object.fx = evt.stageX;
-                    evt.currentTarget.object.fy = evt.stageY;
-                    this.simulation.alphaTarget(0.3).restart();
-                    this.stage.update();
-                }
-            );
-            
-            e.container.on("pressup", (evt) =>
-                {
-                    console.log(1);
-                    // evt.currentTarget.object.set(evt.stageX, evt.stageY);
-                    evt.currentTarget.object.fx = null;
-                    evt.currentTarget.object.fy = null;
-                    this.simulation.alphaTarget(0);
-                    this.stage.update();
-                }
-            );
-        })
+        this.draw(this.nodes, links)
         
     }
     

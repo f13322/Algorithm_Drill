@@ -118,7 +118,7 @@ export class SelectionSortDrill{
         this.iterationText = new createjs.Text("", "50px Arial", "").set({
             text: "Iteration 1",
             x: this.nodes[0].x - 100,
-            y: 100,
+            y: 90,
             lineWidth: 400
         });
         this.stage.addChild(this.iterationText);
