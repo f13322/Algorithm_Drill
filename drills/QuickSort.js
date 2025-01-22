@@ -8,10 +8,9 @@ export class QuickSortDrill{
         this.hintCount = 3;
         this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
-        this.description = "-Sort the list using quick sort step by step, " + 
-        "each step will be varified automatically\n\n " +
-        "-Click on two elements to swap them around.\n\n" +
-        "-Click on New List to get a new list.\n\n"
+        this.description = "-Sort the list using quick sort step by step\n\n " +
+        "-Click on two elements to swap them around.\n\n"
+        
         this.activeLayer = null;
         this.piviotChoice;
 

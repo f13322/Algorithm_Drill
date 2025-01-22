@@ -1,4 +1,4 @@
-export class heapDrill{
+export class BST{
     constructor(){
         this.stageWidth = 1600;
         this.stageHeight = 700;
@@ -9,7 +9,7 @@ export class heapDrill{
         this.values = this.heapify(randomList(4));
         this.count = 0;
         this.description = "-Restore the heap after inserting or deleting a " + 
-        "value step by step.\n\n " +
+        "value step by step, each step will be varified automatically\n\n " +
         "-Click on two elements to swap them around.\n\n"
         
         this.stage = new createjs.Stage("canvas");

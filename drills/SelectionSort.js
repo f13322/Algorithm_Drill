@@ -9,12 +9,9 @@ export class SelectionSortDrill{
         this.hintCount = 3;
         this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
-        this.description = "-Sort the list using insertion sort, after each " + 
-        "iteration click on Check to varify if it was correct.\n\n" + 
+        this.description = "-Sort the list using insertion sort.\n\n" + 
         "-Click on two elements to swap them around.\n\n" +
-        "-Click on New List to get a new list.\n\n" + 
-        "-Click on Revert to undo changes made in the current iteration."
-        
+        "-Click on New List to get a new list.\n\n"        
         
         this.stage = new createjs.Stage("canvas");
         this.stage.enableMouseOver();
@@ -110,8 +107,8 @@ export class SelectionSortDrill{
             text: "",
             textAlign: "center",
             x: this.stageWidth/2,
-            y: 360,
-            lineWidth: 400
+            y: 370,
+            lineWidth: 900
         });
         this.stage.addChild(this.promptText);
         
@@ -137,19 +134,11 @@ export class SelectionSortDrill{
             y: this.nodes[this.numValues-1].y + this.cellHeight + 5
         }))
 
-        this.checkButton = new Button(700, 500, 200, 100, this.stage, "Check");
-        this.checkButton.shapeNode.addEventListener("click", () =>{
-            this.check();
-        });
-
-        this.resetButton = new Button(400, 500, 200, 100, this.stage, "New List");
+        this.resetButton = new Button(
+            (this.stageWidth-200)/2, 500, 200, 100, this.stage, "New List"
+        );
         this.resetButton.shapeNode.addEventListener("click", () =>{
             this.reset();
-        });
-
-        this.revertButton = new Button(1000, 500, 200, 100, this.stage, "Revert");
-        this.revertButton.shapeNode.addEventListener("click", () =>{
-            this.revert();
         });
 
         new InstructionIcon(this.stage);
@@ -170,6 +159,7 @@ export class SelectionSortDrill{
             setRectColour(event.target, HIGHLIGHT_COLOUR);
             if (this.select.length == 1){
                 swapRect(event.target, this.select[0]);
+                this.check();
                 this.select.pop();
             }
             else {

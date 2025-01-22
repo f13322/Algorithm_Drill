@@ -6,16 +6,15 @@ export class InsertionSortDrill{
         this.cellWidth = 120;
         this.cellHeight = 120;
         this.count = 1;
+        this.stepCount = 0;
         this.hintCount = 3;
         this.errorCount = 0;
         this.hinting = false;
         this.font = ["", "50px Arial", ""]
-        this.maxSwap = 6;
-        this.description = "-Sort the list using inesrtion sort, after each " + 
-        "iteration click on Check to varify if it was correct.\n\n" + 
+        this.maxSwap = 5;
+        this.description = "-Sort the list using insertion sort.\n\n" + 
         "-Click on two elements to swap them around.\n\n" +
-        "-Click on New List to get a new list.\n\n" + 
-        "-Click on Revert to undo changes made in the current iteration. "
+        "-Click on New List to get a new list.\n\n"
 
         this.stage = new createjs.Stage("canvas");
         this.stage.enableMouseOver();
@@ -64,26 +63,35 @@ export class InsertionSortDrill{
             }
         }
 
+        if (newList[0] < newList[1]){
+            const temp = newList[0];
+            newList[0] = newList[1];
+            newList[1] = temp;
+        }
+
         return newList;
     }
 
     insertionSortAlg(list){
         var steps = []
-        steps.push(list.slice());
+        steps.push([list.slice()]);
         for (let i = 1; i < this.numValues; i++){
             let count = 1;
+            let arr = []
             while (count <= i){
                 if (list[i-count+1] < list[i-count]){
                     let temp = list[i-count+1];
                     list[i-count+1] = list[i-count];
                     list[i-count] = temp;
                     count++;
+                    arr.push(list.slice());
                 } else {
                     break;
                 }
             }
-            steps.push(list.slice());
+            steps.push(arr);
         }
+        console.log(steps);
         return steps;
     }
 
@@ -96,7 +104,7 @@ export class InsertionSortDrill{
                 this.cellWidth,
                 this.cellHeight,
                 this.stage,
-                "" + this.steps[0][i],
+                "" + this.steps[0][0][i],
                 (i == 0)? PARTIAL_COLOUR: DEFAULT_COLOUR
             );
             const container = node.container;
@@ -111,8 +119,8 @@ export class InsertionSortDrill{
             text: "",
             textAlign: "center",
             x: this.stageWidth/2,
-            y: 400,
-            lineWidth: 400
+            y: 370,
+            lineWidth: 900
         });
         this.stage.addChild(this.promptText);
         
@@ -138,44 +146,14 @@ export class InsertionSortDrill{
             y: this.nodes[this.numValues-1].y + this.cellHeight + 5
         }))
 
-        this.checkButton = new Button(700, 500, 200, 100, this.stage, "Check");
-        this.checkButton.shapeNode.addEventListener("click", () =>{
-            this.check();
-        });
-
-        this.resetButton = new Button(400, 500, 200, 100, this.stage, "New List");
+        this.resetButton = new Button(
+            (this.stageWidth - 200)/2, 500, 200, 100, this.stage, "New List"
+        );
         this.resetButton.shapeNode.addEventListener("click", () =>{
             this.reset();
         });
 
-        this.revertButton = new Button(1000, 500, 200, 100, this.stage, "Revert");
-        this.revertButton.shapeNode.addEventListener("click", () =>{
-            this.revert();
-        });
-
         new InstructionIcon(this.stage);
-
-        this.stage.update();
-    }
-
-    revert(){
-        for (let i = 0; i < this.numValues; i++){
-            this.nodes[i].textNode.text = this.steps[this.count-1][i];
-            if (i < this.count){
-                this.nodes[i].shapeNode.baseColour = PARTIAL_COLOUR;
-                setRectColour(this.nodes[i].shapeNode, PARTIAL_COLOUR);
-            } else {
-                this.nodes[i].shapeNode.baseColour = DEFAULT_COLOUR;
-                setRectColour(this.nodes[i].shapeNode, DEFAULT_COLOUR);
-            }
-        }
-
-        if (this.hints.length == 2){
-            this.stage.removeChild(this.hints.pop());
-        }
-        if (this.hinting){
-            this.giveHint();
-        }
 
         this.stage.update();
     }
@@ -187,11 +165,19 @@ export class InsertionSortDrill{
             
             if (this.select.length == 1){
                 swapRect(event.target, this.select[0]);
+
+                if (!this.check()) swapRect(this.select[0], event.target);
+                
                 this.select.pop();
-                if (this.hints.length == 2){
-                    this.stage.removeChild(this.hints.pop());
+
+                if (this.select[0]){
+                    setRectColour(this.select[0], this.select.baseColour);
+                    this.select[0].selected = false;
+                    this.select.pop();
                 }
+
                 if (this.hinting){
+                    this.stage.removeChild(this.hints.pop());
                     this.giveHint();
                 }
             }
@@ -212,47 +198,54 @@ export class InsertionSortDrill{
         }
 
         var correct = true;
-        if (this.select[0]){
-            setRectColour(this.select[0], this.select.baseColour);
-            this.select[0].selected = false;
-            this.select.pop();
-        }
+
 
         for (let i = 0; i < this.numValues; i++){
-            if (this.nodes[i].textNode.text != this.steps[this.count][i] + ""){
+            if (this.nodes[i].textNode.text != this.steps[this.count][this.stepCount][i] + ""){
                 correct = false;
                 break;
             }
         }
 
         if (correct){
-            this.count++;
-            this.errorCount = 0;
-            this.toggleHint(false);
+            if (++this.stepCount >= this.steps[this.count].length){
+                this.stepCount = 0;
+                this.errorCount = 0;
+                this.toggleHint(false);
+                
+                this.promptText.color = CORRECT_COLOUR;
+                do{
+                    this.count++;
+                }
+                while ((this.count < this.steps.length) && 
+                    (this.steps[this.count].length == 0));
 
-            this.promptText.color = CORRECT_COLOUR;
-            
-            if (this.count == this.numValues){
-                this.nodes.forEach((e) => {
-                    setRectColour(e.shapeNode, CORRECT_COLOUR);
-                    e.shapeNode.removeAllEventListeners();
-                })
-                this.promptText.text = "The list is now sorted.";
-            } else {
                 this.iterationText.text = "Iteration "  + this.count;
-                this.promptText.text = "Correct";
                 for (let i = 0; i < this.count; i++){
                     this.nodes[i].shapeNode.baseColour = PARTIAL_COLOUR;
                     setRectColour(this.nodes[i].shapeNode, PARTIAL_COLOUR);
                 }
-            }
+                
+                if (this.count >= this.numValues){
+                    this.nodes.forEach((e) => {
+                        setRectColour(e.shapeNode, CORRECT_COLOUR);
+                        e.shapeNode.removeAllEventListeners();
+                    })
+                    this.promptText.text = "The list is now sorted.";
+                } else {
+                    this.promptText.text = "Correct";
+                }
+            };
+
+            return true
         } else {
-            this.revert();
             this.promptText.text = "Try Again";
             this.promptText.color = HIGHLIGHT_COLOUR;
             if (++this.errorCount == 3){
                 this.toggleHint(true);
             }
+
+            return false
         }
 
         this.stage.update();
@@ -264,7 +257,6 @@ export class InsertionSortDrill{
                 this.stageWidth-250, 100, 200, 100, this.stage, "hint"
             ));
             this.hints[0].shapeNode.addEventListener("click", () =>{
-                this.revert();
                 this.giveHint();
                 this.hinting = true;
             });
@@ -277,15 +269,20 @@ export class InsertionSortDrill{
                 this.stage.removeChild(e);
             })
             this.hints = []
-            this.checkButton.changeColour(BUTTON_COLOUR);
         }
     }
 
     giveHint(){
-        var targetIndex = -1;
+        var dist = 1;
+        while (this.steps[this.count-dist].length == 0){
+            dist++;
+        }
 
+        var targetIndex = -1;
+        console.log(this.steps[this.count-dist][0][this.count], this.count, dist);
         for (let i = 0; i <= this.count; i++){
-            if (this.steps[this.count-1][this.count] == this.steps[this.count][i]){
+            if (this.steps[this.count-dist][0][this.count] 
+                == this.steps[this.count][this.steps[this.count].length - 1][i]){
                 targetIndex = i;
                 break;
             }
@@ -293,18 +290,14 @@ export class InsertionSortDrill{
 
         var sourceIndex = 0;
         for (let i = 0; i < this.nodes.length; i++){
-            if (this.steps[this.count-1][this.count] == this.nodes[i].textNode.text){
+            if (this.steps[this.count-dist][0][this.count] == this.nodes[i].textNode.text){
                 sourceIndex = i;
                 break;
             }
         }
 
-        if (targetIndex == sourceIndex){
-            this.checkButton.changeColour(HINT_COLOUR);
-            return;
-        } else {
-            this.checkButton.changeColour(BUTTON_COLOUR);
-        }
+        console.log(targetIndex, sourceIndex);
+        if (targetIndex == sourceIndex) return;
 
         this.addArc(sourceIndex, targetIndex);
         this.stage.update();

@@ -10,8 +10,8 @@ export class MergeDrill{
         this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
         this.description = "-Merge the two smaller list into one sorted " + 
-        "list step by step, each step will be varified automatically\n\n " +
-        "-Click on two elements to swap them around.\n\n" +
+        "list step by step\n\n " +
+        "-Click on two elements to move them around.\n\n" +
         "-Click on New List to get a new list.\n\n"
 
         this.select = [];
@@ -93,7 +93,7 @@ export class MergeDrill{
             textAlign: "center",
             x: this.stageWidth/2,
             y: 500,
-            lineWidth: 400
+            lineWidth: 900
         });
         this.stage.addChild(this.promptText);
 
