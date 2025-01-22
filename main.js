@@ -33,14 +33,15 @@ const DRILL_LIST = {
 window.changeAlg = function changeAlg(){
     const value = new URLSearchParams(window.location.search).get("selected")
     const selected = document.getElementById("selection");
-    
-    if (selected.value in DRILL_LIST && value != selected.value){
-        window.location.replace(
-            window.location.origin + "\\index.html?selected=" + selected.value
-        );
-    } else {
-        window.location.replace(window.location.origin + "\\index.html");
-    }
+    var url = window.location.href;
+    if(url.indexOf("?") > 0) {
+        url = url.substring(0, url.indexOf("?"));
+    } ;
+
+    if (selected.value in DRILL_LIST && value != selected.value){    
+        url += ("?selected=" + selected.value);
+    } 
+    window.location.replace(url);
 }
 
 $(function(){
