@@ -1,311 +1,394 @@
 export class BST{
     constructor(){
-        this.stageWidth = 1600;
-        this.stageHeight = 700;
+        this.stageWidth = 2000;
+        this.stageHeight = 1600;
         this.circleSize = 40;
-        this.height = 4;
         this.hintCount = 3;
         this.errorCount = 0;
-        this.values = this.heapify(randomList(4));
-        this.count = 0;
-        this.description = "-Restore the heap after inserting or deleting a " + 
-        "value step by step, each step will be varified automatically\n\n " +
-        "-Click on two elements to swap them around.\n\n"
+        this.description = ""
+        
+        this.root = null;
+        this.currentDrill = null;
+        this.currentNode = null;
+        this.newNode = null;
+        this.hintButton = null;
         
         this.stage = new createjs.Stage("canvas");
         this.stage.width = this.stageWidth;
         this.stage.height = this.stageHeight;
         this.stage.enableMouseOver();
-
-        this.insertButton = null;
-        this.deleteButton = null;
+        
+        this.line = new createjs.Shape();
+        this.stage.addChild(this.line);
 
         this.nodes = [];
         this.lines = [];
         this.select = [];
-        this.list =  [];
-        this.steps = [];
-        this.hints = [];
+        this.hint = null;
+        this.values = new Set();
+
 
         this.drawInitial();
         this.stage.update();
     }
 
-    heapify(list){
-        for (let i = Math.floor(list.length/2)  -1; i >= 0; i--){
-            this.percolateDown(list, i);
-        }
-        return list;
-    }
-
-    percolateDown(list, i){
-        const leftIndex = 2*i + 1;
-        const rightIndex = leftIndex + 1;
-        
-        if ((rightIndex < list.length) 
-            && (list[i] < list[rightIndex]) 
-            && (list[leftIndex] < list[rightIndex])){
-                const temp = list[i];
-                const original = list.slice();
-
-                list[i] = list[rightIndex];
-                list[rightIndex] = temp;
-
-                const arr = this.percolateDown(list, rightIndex);
-                arr.unshift(original);
-                return arr;
-        } else if ((leftIndex < list.length) && (list[i] < list[leftIndex])){
-            const temp = list[i];
-            const original = list.slice();
-            list[i] = list[leftIndex];
-            list[leftIndex] = temp;
-
-            const arr = this.percolateDown(list, leftIndex);
-            arr.unshift(original);
-            return arr;
-        }
-
-        return [list.slice()];
-    }
-
-    percolateUp(list, i){
-        const arr = [list.slice()];
-        var parentIndex = Math.ceil(i/2)-1;
-        var currentIndex = i;
-        while((currentIndex != 0) && (list[currentIndex] > list[parentIndex])){
-            const temp = list[parentIndex];
-            list[parentIndex] = list[currentIndex];
-            list[currentIndex] = temp;
-            currentIndex = parentIndex;
-            parentIndex = Math.ceil(currentIndex/2) - 1
-            arr.push(list.slice());
-        }
-        return arr;
-    }
-
     drawInitial(){
-        // Draw the binary tree
-        for (let i = 0; i < this.height; i++){
-            for (let j = 0; j < 1<<i; j++){
-                const circle = new Circle(
-                    this.circleSize * 4 * j * (1<<(this.height-1-i)) 
-                    + ((1<<(this.height-1-i)) - (1<<(this.height-1))) * this.circleSize * 2
-                    + this.stageWidth/2,
-                    this.circleSize * 2*i + 80,
-                    this.circleSize,
-                    this.stage,
-                    (((1<<i) + j) <= this.values.length)? 
-                        "" + this.values[((1<<i) + j)-1] : ""
-                )
-                circle.shapeNode.removeAllEventListeners(); 
-                circle.setFontSize(this.circleSize);
+        const value = Math.floor(Math.random()*100) + 1;
+        this.root = new Circle(
+            0, 0, this.circleSize, this.stage, value
+        ); 
+        this.root.value = value;
+        this.values.add(value);
 
-                this.nodes.push(circle.container);
-            }
-        }
+        this.root.setFontSize(this.circleSize);
 
-        for (let i = 0; i < Math.floor(this.nodes.length/2); i++){
-            const line = new createjs.Shape();
-            const startCoord = [this.nodes[i].x, this.nodes[i].y];
-            const t1Coord = [this.nodes[i*2+1].x, this.nodes[i*2+1].y];
-            const t2Coord = [this.nodes[i*2+2].x, this.nodes[i*2+2].y];
+        this.root.shapeNode.removeAllEventListeners();
 
-            line.graphics
-                .setStrokeStyle(4)
-                .beginStroke("black")
-                .moveTo(...startCoord)
-                .lineTo(...t1Coord)
-                .endStroke();
-            
-            line.graphics
-                .setStrokeStyle(4)
-                .beginStroke("black")
-                .moveTo(...startCoord)
-                .lineTo(...t2Coord)
-                .endStroke();
-                
-            this.stage.addChildAt(line, 0);
-        }
+        this.root.left = new Circle(0, 0, this.circleSize, this.stage);
+        this.root.left.parent = this.root;
+        this.root.right = new Circle(0, 0, this.circleSize, this.stage);
+        this.root.right.parent = this.root;
+        
+        this.root.children = [
+            this.root.left,
+            this.root.right
+        ]
 
-        const rectSize = 70;
-        for (let i = 0; i < this.nodes.length; i++){
-            const rect = new Rect(
-                i*rectSize + this.stageWidth/2 - this.nodes.length * rectSize/2,
-                400,
-                rectSize,
-                rectSize,
-                this.stage,
-                "" + this.nodes[i].children[1].text,
-            )
-
-            rect.setFontSize(35);
-            rect.shapeNode.removeAllEventListeners();
-
-            this.list.push(rect.container);
-        }
+        this.root.children.forEach((e) => {
+            e.shapeNode.removeAllEventListeners();
+            e.setFontSize(this.circleSize);
+        });
 
         this.promptText = new createjs.Text("", "bold 50px Arial", "").set({
             text: "",
             textAlign: "center",
-            x: this.stageWidth/2,
-            y: 500,
+            x: this.stageWidth/2 + 400,
+            y: 180,
             lineWidth: 400
         });
         this.stage.addChild(this.promptText);
 
-        new InstructionIcon(this.stage);
-
-
         this.toggleButtons(true);
+        this.updateTree();
+
+        new InstructionIcon(this.stage);
     }
 
-    swap(t1, t2){
-        const l1 = this.list[this.nodes.indexOf(t1.parent)].shapeNode;
-        const l2 = this.list[this.nodes.indexOf(t2.parent)].shapeNode;
-        swapCircle(t1, t2);
-        swapRect(l1, l2);
-    }
-
-    click(event){
-        const nodeIndex = this.nodes.indexOf(event.target.parent);
-        if (!event.target.selected){
-            // Swap node if there is another selected node
-            if (this.select.length == 1){
-                this.check(event.target);
-                this.select.pop();
-            }
-            else {
-                // Select node
-                event.target.selected = true;
-                setCircleColour(event.target, HIGHLIGHT_COLOUR)
-    
-                if (nodeIndex != -1){
-                    setRectColour(
-                        this.list[this.nodes.indexOf(event.target.parent)].shapeNode, 
-                        HIGHLIGHT_COLOUR
-                    );
-                }
-
-                this.select.push(event.target);
-            }
+    insertDrill(event){
+        if (this.newNode.value <  event.target.object.value){
+            this.promptText.text = "Smaller";
+            this.promptText.color = "black";
+            this.currentNode = this.currentNode.left;
+        } else if (this.newNode.value > event.target.object.value){
+            this.promptText.text = "Larger";
+            this.promptText.color = "black";
+            this.currentNode = this.currentNode.right;
         } else {
-            // Deselect node
-            event.target.selected = false;
-            setCircleColour(event.target, DEFAULT_COLOUR)
+            event.target.object.value = this.newNode.value;
+            event.target.object.textNode.text = this.newNode.value;
 
-            if (nodeIndex != -1){
-                setRectColour(
-                    this.list[this.nodes.indexOf(event.target.parent)].shapeNode, 
-                    DEFAULT_COLOUR)
-            }
-            this.select.pop();
-        }
-        this.stage.update();
-    }
+            this.values.add(this.newNode.value);
 
-    check(target){
-        const temp = target.object.textNode.text;
-        target.object.textNode.text = this.select[0].object.textNode.text;
-        this.select[0].object.textNode.text = temp;
-
-        const nodeIndex = this.nodes.indexOf(this.select[0].parent);
-        this.select[0].selected = false;
-        setCircleColour(this.select[0], this.select[0].baseColour);
-        if (nodeIndex != -1){
-            setRectColour(
-                this.list[nodeIndex].shapeNode, 
-                DEFAULT_COLOUR)
-        }
-        this.stage.update();
-
-        for (let i = 0; i < this.values.length; i++){
-            if (this.steps[this.count][i] != this.nodes[i].textNode.text){
-                this.incorrect();
-                this.select[0].object.textNode.text = target.object.textNode.text;
-                target.object.textNode.text = temp;
-                return
-            }
-        }
-
-        this.correct();
-
-        for (let i = 0; i < this.list.length; i++){
-            this.list[i].textNode.text = this.nodes[i].textNode.text;
+            this.addNode(event.target.object);
+            this.endDrill();
+            return;
         }
         
-        if (++this.count >= this.steps.length){
-            if (this.addNode){
-                this.addNode.clear();
-                this.addNode = null;
-            }
-            this.toggleButtons(true);
-        }
-    }
-
-    addValue(){
-        var value;
-
-        do {
-            value = Math.floor(Math.random() * 100) + 1;
-        } while (this.values.indexOf(value) != -1);
-
-        this.addNode = new Circle(
-            this.stageWidth/2,
-            600,
-            this.circleSize,
-            this.stage,
-            value
-        )
-
-        this.values.push(value);
-        this.steps = this.percolateUp(this.values, this.values.length-1);
-        this.count = 0;
-
-        this.addNode.shapeNode.addEventListener("click", (event) => {
-            this.click(event);
-        })
-
-        this.nodes.forEach((e) => {
-            e.shapeNode.addEventListener("click", (event) => {
-                this.click(event);
+        event.target.object.shapeNode.removeAllEventListeners();
+        event.target.object.children.forEach((e) => {
+            e.shapeNode.addEventListener("click", (evt) => {
+                this.click(evt);
             });
-            e.object.activate();
-        })
-
-        this.stage.update();
+            e.activate();
+        });
     }
 
-    removeValue(){
-        this.nodes[0].textNode.text = "";
-        this.list[0].textNode.text = "";
+    deleteDrill(event){
+        if (this.newNode.target){
+            const target = this.newNode.target;
+            console.log(target);
+            if ((target.right.value) && (target.left.value)){    
+                if (this.currentNode.left.value){
+                    this.currentNode = this.currentNode.left;
+                } else {
+                    target.textNode.text = this.currentNode.value;
+                    target.value = this.currentNode.value;
 
-        if (this.values.length <= 1){
-            this.values = [];
-            this.toggleButtons(true);
+                    this.currentNode.left.clear();
+                    this.currentNode.clear();
+
+                    if (this.currentNode.parent == target){
+                        this.currentNode.parent.right = this.currentNode.right;
+                        this.currentNode.parent.children[1] = this.currentNode.right;
+                        this.currentNode.right.parent = this.currentNode.parent;
+                    } else {
+                        this.currentNode.parent.left = this.currentNode.right;
+                        this.currentNode.parent.children[0] = this.currentNode.right;
+                        this.currentNode.right.parent = this.currentNode.parent;
+                    }
+
+                    this.updateTree();
+                    this.endDrill();
+                    return;
+                }
+            } else if (target == this.root){
+                this.root = this.currentNode;
+                target.clear();
+                if (!(target.left.value)) target.left.clear();
+                if (!(target.right.value)) target.right.clear();
+
+                this.updateTree();
+                this.endDrill();
+                return;
+            } else if (target.parent.right == target){
+                target.parent.right = this.currentNode;
+                target.parent.children[1] = this.currentNode;
+                this.currentNode.parent =target.parent;
+                
+                target.clear();
+                if (!(target.left.value)) target.left.clear();
+                if (!(target.right.value)) target.right.clear();
+
+                this.updateTree();
+                this.endDrill();
+                return;
+            } else {
+                target.parent.left = this.currentNode;
+                target.parent.children[0] = this.currentNode;
+                this.currentNode.parent =target.parent;
+
+                target.clear();
+                if (!(target.left.value)) target.left.clear();
+                if (!(target.right.value)) target.right.clear();
+
+                this.updateTree();
+                this.endDrill();
+                return;
+            }
+        } else if (this.newNode.value <  event.target.object.value){
+            this.promptText.text = "Smaller";
+            this.promptText.color = "black";
+            this.currentNode = this.currentNode.left;
+        } else if (this.newNode.value > event.target.object.value){
+            this.promptText.text = "Larger";
+            this.promptText.color = "black";
+            this.currentNode = this.currentNode.right;
+        } else {
+            event.target.object.textNode.text = "";
+            this.values.delete(event.target.object.value);
+            event.target.object.value = undefined;
+            this.newNode.target = event.target.object;
+            
+            if (event.target.object.right.value){
+                this.currentNode = this.currentNode.right;
+            }  else if (event.target.object.left.value){
+                this.currentNode = this.currentNode.left;
+            } else {
+                event.target.object.children.forEach((e) =>
+                    e.clear()
+                );
+                event.target.object.children = undefined;
+                this.updateTree();
+                event.target.object.shapeNode.removeAllEventListeners();
+                this.endDrill();
+                return;
+            }
+
+            this.promptText.text = "Find the replacement Node";
+            this.newNode.textNode.text = this.newNode.value;
+        }
+
+        event.target.object.shapeNode.removeAllEventListeners();
+        event.target.object.children.forEach((e) => {
+            e.shapeNode.addEventListener("click", (evt) => this.click(evt));
+            e.activate();
+        });
+    }
+
+    searchDrill(event){
+        if (this.newNode.value <  event.target.object.value){
+            this.promptText.text = "Smaller";
+            this.promptText.color = "black";
+            this.currentNode = this.currentNode.left;
+        } else if (this.newNode.value > event.target.object.value){
+            this.promptText.text = "Larger";
+            this.promptText.color = "black";
+            this.currentNode = this.currentNode.right;
+        } else {
+            this.promptText.text = 
+                (this.newNode.value == event.target.object.value)? 
+                "Value found":"Value not in tree";
+            this.promptText.color = "black";
+            event.target.object.shapeNode.removeAllEventListeners();
+            this.endDrill();
             return;
         }
 
-        this.values[0] = this.values.pop();
-        this.steps = this.percolateDown(this.values, 0);
-        this.count = 0;
+        event.target.object.shapeNode.removeAllEventListeners();
+        event.target.object.children.forEach((e) => {
+            e.shapeNode.addEventListener("click", (evt) => this.click(evt));
+            e.activate();
+        });
+    }
 
+    click(event){
+        if ((this.currentDrill == null) || this.newNode == null){
+            return
+        }
 
-        this.nodes.forEach((e) => {
-            e.shapeNode.addEventListener("click", (event) => {
-                this.click(event);
+        if (event.target.object != this.currentNode){
+            this.incorrect();
+            return;
+        }
+
+        if (event.target.object != this.root){
+            event.target.object.parent.children.forEach((e) => {
+                e.shapeNode.removeAllEventListeners();
             });
-            e.object.activate();
-        })
+        }
+        
+        setCircleColour(
+            event.target.object.shapeNode, event.target.baseColour
+        );
+
+        if (this.currentDrill == "insert"){
+            this.insertDrill(event);
+        } else if (this.currentDrill == "delete"){
+            this.deleteDrill(event);
+        } else {
+            this.searchDrill(event);
+        }
+
+        if (this.hint){
+            this.giveHint();
+        }
 
         this.stage.update();
+    }
+
+    startDrill(){
+        this.toggleButtons(false);
+
+        let n; // the probability that the new value is in the tree
+        if (this.currentDrill == "insert"){
+            n = 0;
+        } else if (this.currentDrill == "delete"){
+            n = 1;
+        } else {
+            n = 0.7;
+        }
+
+        let value
+        if (Math.random() < n){
+            do {
+                value = Math.floor(Math.random()*100) + 1;
+            } while (!(this.values.has(value)));
+        } else {
+            do {
+                value = Math.floor(Math.random()*100) + 1;
+            } while (this.values.has(value));
+        }
+
+        this.newNode = new Circle(
+            this.stageWidth/2, 80, this.circleSize, this.stage, "?"
+        );
+        this.newNode.value = value;
+        this.newNode.shapeNode.removeAllEventListeners();
+
+        this.root.activate();
+        this.root.shapeNode.addEventListener("click", (evt) => this.click(evt));
+        this.currentNode = this.root;
+
+        this.stage.update();
+    }
+
+    endDrill(){
+        this.currentNode = this.root;
+        this.newNode.clear();
+        this.newNode = null;
+        this.toggleButtons(true);
+        this.correct();
+        this.stage.update();
+    }
+
+    addNode(node){
+        if (!(node.children)){
+            const left = new Circle(0, 0, this.circleSize, this.stage);
+            left.setFontSize(this.circleSize);
+            left.shapeNode.removeAllEventListeners();
+            left.parent = node;
+
+            const right = new Circle(0, 0, this.circleSize, this.stage);
+            right.setFontSize(this.circleSize);
+            right.shapeNode.removeAllEventListeners();
+            right.parent = node;
+
+            node.left = left;
+            node.right = right;
+
+            node.children = [left, right];
+        }
+
+        this.updateTree();
+    }
+
+    updateTree(){
+        const root = d3.hierarchy(this.root);
+        const tree = d3.tree().nodeSize([100, 100]).separation(function(){return 1});
+
+        tree(root);
+        let left = root;
+        let right = root;
+
+        root.eachBefore(node => {
+            if (node.x < left.x) left = node;
+            if (node.x > right.x) right = node;
+        });
+
+        this.line.graphics.clear();
+        this.line.graphics.setStrokeStyle(4).beginStroke("black");
+
+        root.each(node => {
+            node.data.set(node.x + this.stageWidth/2, node.y + 200);
+            node.data.depth = node.depth;
+        });
+
+        root.each(node => {
+            if (node.data.children){
+                node.data.children.forEach((e) => {
+                    this.drawLine(node.data, e)
+                });
+            }
+
+            if ((node.data.textNode.text) && (node.data.value != node.data.textNode.text)){
+                console.log(node);
+            }
+        });
+
+        this.stage.update();
+    }
+    
+    drawLine(source, target){
+        const angleA = Math.atan2(target.y - source.y, target.x - source.x);
+        const angleB = Math.atan2(source.y - target.y, source.x - target.x);
+
+        this.line.graphics.moveTo(
+            source.x + this.circleSize*Math.cos(angleA), 
+            source.y + this.circleSize*Math.sin(angleA)
+        )
+        this.line.graphics.lineTo(
+            target.x + this.circleSize*Math.cos(angleB), 
+            target.y + this.circleSize*Math.sin(angleB)
+        )    
     }
 
     correct(){
         this.promptText.color = CORRECT_COLOUR;
         this.errorCount = 0;
-        this.toggleHint(false);     
+        if (this.hint) this.toggleHint(false);
         this.promptText.text = "Correct";
-        this.nodes.forEach((e) => e.object.changeColour(DEFAULT_COLOUR));
+
+        this.stage.update();
     }
 
     incorrect(){
@@ -315,70 +398,83 @@ export class BST{
         if (++this.errorCount == this.hintCount){
             this.toggleHint(true);
         }
+
+        this.stage.update();
     }
 
     toggleButtons(on){
         if (on){
-            if (this.values.length < this.nodes.length){
+            if (this.values.size < 17){
                 this.insertButton = new Button(
-                    this.stageWidth/2 - 400, 600, 300, 100, this.stage, "Add Value"
+                    (this.stageWidth - 200)/2 - 250, 20, 200, 100, this.stage, "Insert"
                 );
-                
-                this.insertButton.shapeNode.addEventListener("click", () =>{
+        
+                this.insertButton.shapeNode.addEventListener("click", () => {
                     this.toggleButtons(false);
-                    this.promptText.text = "";
-                    this.addValue();
-                })
+                    this.currentDrill = "insert";
+                    this.promptText.text = "Find where the node should be inserted";
+                    this.promptText.color = "black";
+                    this.startDrill();
+                });
+        
             }
-            
-            if (this.values.length > 0){
+
+            if (this.values.size > 0){
+                this.searchButton = new Button(
+                    (this.stageWidth - 200)/2, 20, 200, 100, this.stage, "Search"
+                );
+    
+                this.searchButton.shapeNode.addEventListener("click", () => {
+                    this.toggleButtons(false);
+                    this.currentDrill = "search";
+                    this.promptText.text = "Find the node";
+                    this.promptText.color = "black";
+                    this.startDrill();
+                });
+        
                 this.deleteButton = new Button(
-                    this.stageWidth/2 + 100, 600, 300, 100, this.stage, "Remove Value"
-                )
+                    (this.stageWidth - 200)/2 + 250, 20, 200, 100, this.stage, "Remove"
+                );
     
                 this.deleteButton.shapeNode.addEventListener("click", () => {
                     this.toggleButtons(false);
-                    this.promptText.text = "";
-                    this.removeValue();
-                })
+                    this.currentDrill = "delete";
+                    this.promptText.text = "Find the node to delete";
+                    this.promptText.color = "black";
+                    this.startDrill();
+                });
             }
-
-            this.nodes.forEach((e) => {
-                e.shapeNode.removeAllEventListeners();
-                setCircleColour(e.shapeNode, DEFAULT_COLOUR);
-            })
-
         } else {
             this.insertButton.clear();
+            this.searchButton.clear();
             this.deleteButton.clear();
         }
     }
 
     toggleHint(on){
         if (on){
-            this.hints.push(new Button(this.stageWidth-210, 100, 200, 100, this.stage, "hint"));
-            this.hints[0].shapeNode.addEventListener("click", () =>{
-                this.giveHint();
-            });
+            this.hintButton = new Button(
+                this.stageWidth - 300, 20, 300, 100, this.stage, "Hint"
+            );
+            this.hintButton.shapeNode.addEventListener("click", 
+                () => this.giveHint()
+            );
         } else {
-            this.hints.forEach((e) =>{
-                if (e instanceof Button){
-                    e.clear();
-                }
-                this.stage.removeChild(e);
-            })
-            this.hints = []
+            this.hint.changeColour(DEFAULT_COLOUR);
+            this.hint = null;
+            // setCircleColour(this.root.shapeNode, DEFAULT_COLOUR);
+            this.hintButton.clear();
+            this.hintButton = null;
         }
     }
 
     giveHint(){
-        console.log("HINT");
-        for (let i = 0; i < this.steps[this.count].length; i++){
-            if (this.steps[this.count][i] != this.nodes[i].textNode.text){
-                this.nodes[i].object.changeColour(HINT_COLOUR);
-            }
+        if (this.hint){
+            this.hint.changeColour(DEFAULT_COLOUR);
         }
-        this.stage.update();
-    }
 
+        this.hint = this.currentNode;
+        this.hint.changeColour(HINT_COLOUR);
+    }
+    
 }

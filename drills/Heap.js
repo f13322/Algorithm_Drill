@@ -6,6 +6,7 @@ export class heapDrill{
         this.height = 4;
         this.hintCount = 3;
         this.errorCount = 0;
+
         this.values = this.heapify(randomList(4));
         this.count = 0;
         this.description = "-Restore the heap after inserting or deleting a " + 
@@ -104,29 +105,24 @@ export class heapDrill{
             }
         }
 
+        
+
         for (let i = 0; i < Math.floor(this.nodes.length/2); i++){
             const line = new createjs.Shape();
+            line.graphics.setStrokeStyle(4).beginStroke("black");
+
             const startCoord = [this.nodes[i].x, this.nodes[i].y];
             const t1Coord = [this.nodes[i*2+1].x, this.nodes[i*2+1].y];
             const t2Coord = [this.nodes[i*2+2].x, this.nodes[i*2+2].y];
 
-            line.graphics
-                .setStrokeStyle(4)
-                .beginStroke("black")
-                .moveTo(...startCoord)
-                .lineTo(...t1Coord)
-                .endStroke();
+            line.graphics.moveTo(...startCoord).lineTo(...t1Coord);
+            line.graphics.moveTo(...startCoord).lineTo(...t2Coord);
             
-            line.graphics
-                .setStrokeStyle(4)
-                .beginStroke("black")
-                .moveTo(...startCoord)
-                .lineTo(...t2Coord)
-                .endStroke();
-                
             this.stage.addChildAt(line, 0);
+            line.graphics.endStroke();
         }
-
+        
+        
         const rectSize = 70;
         for (let i = 0; i < this.nodes.length; i++){
             const rect = new Rect(
@@ -152,6 +148,12 @@ export class heapDrill{
             lineWidth: 400
         });
         this.stage.addChild(this.promptText);
+
+        this.resetButton = new Button(
+            this.stageWidth - 300, 600, 300, 100, this.stage, "New List"
+        );
+
+        this.resetButton.shapeNode.addEventListener("click", () => this.reset());
 
         new InstructionIcon(this.stage);
 
@@ -326,7 +328,6 @@ export class heapDrill{
                 
                 this.insertButton.shapeNode.addEventListener("click", () =>{
                     this.toggleButtons(false);
-                    this.promptText.text = "";
                     this.addValue();
                 })
             }
@@ -338,7 +339,6 @@ export class heapDrill{
     
                 this.deleteButton.shapeNode.addEventListener("click", () => {
                     this.toggleButtons(false);
-                    this.promptText.text = "";
                     this.removeValue();
                 })
             }
@@ -351,6 +351,7 @@ export class heapDrill{
         } else {
             this.insertButton.clear();
             this.deleteButton.clear();
+            this.promptText.text = "";
         }
     }
 
@@ -381,4 +382,22 @@ export class heapDrill{
         this.stage.update();
     }
 
+    reset(){
+        this.values = this.heapify(randomList(4));
+        this.count = 0;
+        this.stage.removeAllChildren();
+
+        this.insertButton = null;
+        this.deleteButton = null;
+
+        this.nodes = [];
+        this.lines = [];
+        this.select = [];
+        this.list =  [];
+        this.steps = [];
+        this.hints = [];
+
+        this.drawInitial();
+        this.stage.update();
+    }
 }

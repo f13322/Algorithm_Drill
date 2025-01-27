@@ -128,7 +128,8 @@ export class DFS{
                         connected = true;
                     }})
                 }
-            })
+            }
+        )
         
 
         this.stage.update();
