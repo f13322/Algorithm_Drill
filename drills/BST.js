@@ -454,7 +454,7 @@ export class BST{
     toggleHint(on){
         if (on){
             this.hintButton = new Button(
-                this.stageWidth - 300, 20, 300, 100, this.stage, "Hint"
+                this.stageWidth - 500, 20, 300, 100, this.stage, "Hint"
             );
             this.hintButton.shapeNode.addEventListener("click", 
                 () => this.giveHint()
