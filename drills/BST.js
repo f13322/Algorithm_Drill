@@ -215,12 +215,12 @@ export class BST{
             this.promptText.color = "black";
             this.currentNode = this.currentNode.right;
         } else {
-            this.promptText.text = 
-                (this.newNode.value == event.target.object.value)? 
-                "Value found":"Value not in tree";
             this.promptText.color = "black";
             event.target.object.shapeNode.removeAllEventListeners();
             this.endDrill();
+            this.promptText.text = 
+                (this.newNode.value == event.target.object.value)? 
+                "Value found":"Value not in tree";
             return;
         }
 
