@@ -10,19 +10,19 @@ class InstructionIcon{
     constructor(stage){
         this.stage = stage
         this.container = new createjs.Container();
-        this.container.x = this.stage.width- 40;
-        this.container.y = 40;
+        this.container.x = this.stage.width- 60;
+        this.container.y = 60;
 
         this.shape = new createjs.Shape();
-        this.shape.graphics.setStrokeStyle(6)
+        this.shape.graphics.setStrokeStyle(8)
                            .beginStroke(BUTTON_COLOUR)
                            .beginFill("rgba(255,255,255,1)")
-                           .drawCircle(0, 0, 20, 20);
+                           .drawCircle(0, 0, 30, 30);
         this.shape.x = 0;
         this.shape.y = 0;
         this.container.addChild(this.shape);
 
-        this.text = new createjs.Text("", "bold 30px Arial", BUTTON_COLOUR).set({
+        this.text = new createjs.Text("", "bold 40px Arial", BUTTON_COLOUR).set({
             text: "i",
             textAlign:"center",
             textBaseline: "middle",
@@ -34,19 +34,19 @@ class InstructionIcon{
         this.container.addEventListener("click", () =>{showInstruction()})
         this.container.addEventListener("mouseover", () =>{
             this.shape.graphics.clear()
-                               .setStrokeStyle(6)
+                               .setStrokeStyle(8)
                                .beginStroke(darkenColour(BUTTON_COLOUR))
                                .beginFill("rgba(255,255,255,1)")
-                               .drawCircle(0, 0, 20, 20);
+                               .drawCircle(0, 0, 30, 30);
             this.text.color = darkenColour(BUTTON_COLOUR);
             this.stage.update();
         })
         this.container.addEventListener("mouseout", () =>{
             this.shape.graphics.clear()
-                               .setStrokeStyle(6)
+                               .setStrokeStyle(8)
                                .beginStroke(BUTTON_COLOUR)
                                .beginFill("rgba(255,255,255,1)")
-                               .drawCircle(0, 0, 20, 20);
+                               .drawCircle(0, 0, 30, 30);
             this.text.color = BUTTON_COLOUR;
             this.stage.update();
         })
