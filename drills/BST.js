@@ -290,7 +290,7 @@ export class BST{
         }
 
         this.newNode = new Circle(
-            this.stageWidth/2, 80, this.circleSize, this.stage, "?"
+            this.stageWidth/2, 80, this.circleSize, this.stage, value
         );
         this.newNode.value = value;
         this.newNode.shapeNode.removeAllEventListeners();
@@ -351,6 +351,12 @@ export class BST{
         root.each(node => {
             node.data.set(node.x + this.stageWidth/2, node.y + 200);
             node.data.depth = node.depth;
+            node.data.textNode.text = (node.data.value)?"?":"";
+            if (!(node.data.value)){
+                node.data.changeColour("lightgray");
+            } else {
+                node.data.changeColour(DEFAULT_COLOUR)
+            }
         });
 
         root.each(node => {
