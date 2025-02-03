@@ -222,10 +222,11 @@ export class BST{
         } else {
             this.promptText.color = "black";
             event.target.object.shapeNode.removeAllEventListeners();
-            this.endDrill();
-            this.promptText.text = 
-                (this.newNode.value == event.target.object.value)? 
+            const prompt = (this.newNode.value == event.target.object.value)? 
                 "Value found":"Value not in tree";
+            this.endDrill();
+            this.promptText.text = prompt;
+            this.stage.update();
             return;
         }
 
