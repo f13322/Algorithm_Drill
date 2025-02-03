@@ -99,6 +99,8 @@ export class SelectionSortDrill{
             const rect = node.shapeNode;
                         
             rect.on("click", (evt) => this.click(evt));
+            rect.on("touchend", (evt) => this.click(evt));
+
 
             this.nodes.push(container);
         }

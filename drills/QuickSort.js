@@ -72,6 +72,15 @@ export class QuickSortDrill{
                 }
             )
         );
+
+        this.piviotOptions.forEach((e) => 
+            e.shapeNode.addEventListener(
+                "touchend", () => {
+                    this.choosePiviot(e.textNode.text)
+                    this.stage.update();
+                }
+            )
+        );
             
         new InstructionIcon(this.stage);
         

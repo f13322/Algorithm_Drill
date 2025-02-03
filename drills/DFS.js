@@ -7,9 +7,9 @@ export class DFS{
         this.errorCount = 0;
         this.hintCount = 3;
         this.description =
-            "- Treverse through the whole graph using DFS.\n\n" + 
-            "- Click on the correct node to update its colour.";
-
+            "- Treverse through the whole graph using DFS.\n\n" +
+            "- Click on the correct node to update its colour.\n\n" + 
+            "- Click on Redraw if the graph is confusing.";
         this.stage = new createjs.Stage("canvas");
         this.stage.width = this.stageWidth;
         this.stage.height = this.stageHeight;
@@ -146,6 +146,7 @@ export class DFS{
         }
 
         this.nodes.forEach((e) => e.shapeNode.addEventListener("click", (evt) => this.click(evt)));
+        this.nodes.forEach((e) => e.shapeNode.addEventListener("touchend", (evt) => this.click(evt)));
 
         this.redrawButton = this.insertButton = new Button(
             (this.stageWidth - 200)/2 - 150, 20, 200, 100, this.stage, "Redraw"
@@ -153,7 +154,7 @@ export class DFS{
         this.redrawButton.shapeNode.addEventListener("click", () => this.draw());
 
         this.redrawButton = this.insertButton = new Button(
-            (this.stageWidth - 200)/2 + 150, 20, 200, 100, this.stage, "New List"
+            (this.stageWidth - 210)/2 + 150, 20, 210, 100, this.stage, "New Graph"
         ); 
         this.redrawButton.shapeNode.addEventListener("click", () => this.reset());
 

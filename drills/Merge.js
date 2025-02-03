@@ -78,6 +78,7 @@ export class MergeDrill{
                 const rect = node.shapeNode;
                                 
                 rect.on("click", (evt) => this.click(evt));
+                rect.on("touchend", (evt) => this.click(evt));
 
                 if (j == 0){
                     rect.correctValue = "" + this.steps[0][i];

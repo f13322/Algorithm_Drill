@@ -152,6 +152,10 @@ export class InsertionSortDrill{
             this.reset();
         });
 
+        this.resetButton.shapeNode.addEventListener("touchend", () =>{
+            this.reset();
+        });
+
         new InstructionIcon(this.stage);
 
         this.stage.update();
