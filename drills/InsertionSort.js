@@ -12,9 +12,9 @@ export class InsertionSortDrill{
         this.hinting = false;
         this.font = ["", "50px Arial", ""]
         this.maxSwap = 5;
-        this.description = "-Sort the list using insertion sort.\n\n" + 
-        "-Click on two elements to swap them around.\n\n" +
-        "-Click on New List to get a new list.\n\n"
+        this.description = "- Sort the list using insertion sort.\n\n" + 
+        "- Click on two elements to swap them around.\n\n" +
+        "- Click on New List to get a new list.\n\n"
 
         this.stage = new createjs.Stage("canvas");
         this.stage.enableMouseOver();
@@ -91,7 +91,6 @@ export class InsertionSortDrill{
             }
             steps.push(arr);
         }
-        console.log(steps);
         return steps;
     }
 
@@ -279,7 +278,6 @@ export class InsertionSortDrill{
         }
 
         var targetIndex = -1;
-        console.log(this.steps[this.count-dist][0][this.count], this.count, dist);
         for (let i = 0; i <= this.count; i++){
             if (this.steps[this.count-dist][0][this.count] 
                 == this.steps[this.count][this.steps[this.count].length - 1][i]){
@@ -296,7 +294,6 @@ export class InsertionSortDrill{
             }
         }
 
-        console.log(targetIndex, sourceIndex);
         if (targetIndex == sourceIndex) return;
 
         this.addArc(sourceIndex, targetIndex);

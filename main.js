@@ -2,9 +2,10 @@ import { SelectionSortDrill } from "./drills/SelectionSort.js";
 import { InsertionSortDrill } from "./drills/InsertionSort.js";
 import { MergeDrill } from "./drills/Merge.js";
 import { QuickSortDrill } from "./drills/QuickSort.js";
-import { DFS } from "./drills/DFS.js"
 import { heapDrill } from "./drills/Heap.js";
 import { BST } from "./drills/BST.js";
+import { DFS } from "./drills/DFS.js"
+import { BFS } from "./drills/BFS.js";
 
 var drill;
 var instructionContainer = document.getElementById("instructionContainer");
@@ -18,6 +19,7 @@ const DRILL_NAMES = {
     "Heap": "heap",
     "Binary Search Tree": "bst",
     "DFS": "dfs",
+    "BFS": "bfs",
 }
 
 const DRILL_LIST = {
@@ -28,6 +30,7 @@ const DRILL_LIST = {
     "quick": QuickSortDrill,
     "bst": BST,
     "dfs": DFS,
+    "bfs": BFS
 }   
 
 window.changeAlg = function changeAlg(){

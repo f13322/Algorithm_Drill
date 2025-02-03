@@ -9,9 +9,9 @@ export class SelectionSortDrill{
         this.hintCount = 3;
         this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
-        this.description = "-Sort the list using insertion sort.\n\n" + 
-        "-Click on two elements to swap them around.\n\n" +
-        "-Click on New List to get a new list.\n\n"        
+        this.description = "- Sort the list using insertion sort.\n\n" + 
+        "- Click on two elements to swap them around.\n\n" +
+        "- Click on New List to get a new list.\n\n"        
         
         this.stage = new createjs.Stage("canvas");
         this.stage.enableMouseOver();

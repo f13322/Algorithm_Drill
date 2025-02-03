@@ -1,4 +1,4 @@
-export class DFS{
+export class BFS{
     constructor(){
         this.stageWidth = 1600;
         this.stageHeight = 1000;
@@ -7,7 +7,7 @@ export class DFS{
         this.errorCount = 0;
         this.hintCount = 3;
         this.description =
-            "- Treverse through the whole graph using DFS.\n\n" + 
+            "- Treverse through the whole graph using BFS.\n\n" + 
             "- Click on the correct node to update its colour.";
 
         this.stage = new createjs.Stage("canvas");
@@ -18,9 +18,8 @@ export class DFS{
         this.count = 0;
         this.nodes = [];
         this.links = [];
-        this.stack = [];
-        this.seen = [];
-        this.done = [];
+        this.queue = [];
+        this.heights = [];
         
         this.line = new createjs.Shape();
         
@@ -95,18 +94,9 @@ export class DFS{
             
             this.nodes[i].neighbours = [];
             this.nodes[i].state = "white";
-            this.seen.push(
+            this.heights.push(
                 new Rect(
-                    i*60 + this.stageWidth/2 - this.numNodes * 60 - 30,
-                    130,
-                    60,
-                    60,
-                    this.stage
-                )
-            );
-            this.done.push(
-                new Rect(
-                    i*60 + this.stageWidth/2 + 180,
+                    i*60 + this.stageWidth/2 - this.numNodes * 60/2,
                     130,
                     60,
                     60,
@@ -114,22 +104,13 @@ export class DFS{
                 )
             );
 
-            this.seen[i].shapeNode.removeAllEventListeners();
-            this.done[i].shapeNode.removeAllEventListeners();
+            this.heights[i].shapeNode.removeAllEventListeners();
         }
 
         this.stage.addChild(new createjs.Text("", "bold 50px Arial", "").set({
-            text: "Seen:",
+            text: "Height:",
             textAlign: "center",
-            x: this.stageWidth/2 - this.numNodes * 60 - 100,
-            y: 140,
-            lineWidth: 900
-        }));
-
-        this.stage.addChild(new createjs.Text("", "bold 50px Arial", "").set({
-            text: "Done:",
-            textAlign: "center",
-            x: this.stageWidth/2 + 100,
+            x: this.stageWidth/2 - this.numNodes * 60/2 - 90,
             y: 140,
             lineWidth: 900
         }));
@@ -168,15 +149,14 @@ export class DFS{
         
         this.draw();
         
-        for (let i = this.numNodes - 1; i >= 0; i--){
+        for (let i = 0; i < this.numNodes; i++){
             const node = this.nodes[i]
-            this.stack.push(node);
             node.changeColour("white");
             node.shapeNode.addEventListener("mouseout", () => node.drawBoarder("black"));
             node.drawBoarder("black");
         }
         
-        this.currentNode = this.stack.pop();
+        this.currentNode = this.nodes[0];
 
         new InstructionIcon(this.stage);
         this.stage.update();
@@ -195,26 +175,40 @@ export class DFS{
             target.textNode.color = "white";
             target.changeColour("darkgray");
             target.drawBoarder("black");
-            this.stack.push(target);
-            this.seen[Number(target.textNode.text)].textNode.text = this.count++;
+            for (let i = 0; i < target.neighbours.length; i++){
+                if ((target.neighbours[i].state == "white") &&
+                    !(this.queue.includes(target.neighbours[i]))){
+                    this.queue.push(target.neighbours[i]);
+                    target.neighbours[i].parent = target;
+                }
+            }
+            
+            this.queue.push(target);
+
+            target.height = (target.parent)? target.parent.height + 1:0;
+            this.heights[Number(target.textNode.text)].textNode.text = target.height;
         } else if (target.state == "gray"){
             target.state = "black";
             target.textNode.color = "white";
             target.changeColour("black");
             target.drawBoarder("black");
-            this.done[Number(target.textNode.text)].textNode.text = this.count++;
             target.shapeNode.removeAllEventListeners();
         }
         
-        for (let i = target.neighbours.length - 1; i >= 0; i--){
-            if (target.neighbours[i].state == "white"){
-                this.stack.push(target.neighbours[i]);
-            }
-        }
 
         do{
-            this.currentNode = this.stack.pop();
+            this.currentNode = this.queue.shift();
         } while ((this.currentNode) && (this.currentNode.state == "black"));
+
+        if (!(this.currentNode)){
+            this.count = 0;
+            for (let i = 0; i < this.nodes.length; i++){
+                if (this.nodes[i].state == "white"){
+                    this.currentNode = this.nodes[i];
+                    break;
+                }
+            }
+        }
 
         if (!(this.currentNode)){
             this.complete();
@@ -230,9 +224,8 @@ export class DFS{
         this.count = 0;
         this.nodes = [];
         this.links = [];
-        this.stack = [];
-        this.seen = [];
-        this.done = [];
+        this.queue = [];
+        this.heights = [];
         
         this.line = new createjs.Shape();
         

@@ -5,7 +5,9 @@ export class BST{
         this.circleSize = 40;
         this.hintCount = 3;
         this.errorCount = 0;
-        this.description = ""
+        this.description = 
+            "- Insert/search/remove a value from the binary search tree by treversing through it.\n\n" + 
+            "- Click on the current active node to compare against its value."
         
         this.root = null;
         this.currentDrill = null;
@@ -106,7 +108,6 @@ export class BST{
     deleteDrill(event){
         if (this.newNode.target){
             const target = this.newNode.target;
-            console.log(target);
             if ((target.right.value) && (target.left.value)){    
                 if (this.currentNode.left.value){
                     this.currentNode = this.currentNode.left;
@@ -307,6 +308,7 @@ export class BST{
         this.newNode.clear();
         this.newNode = null;
         this.toggleButtons(true);
+        this.toggleHint(false);
         this.correct();
         this.stage.update();
     }
@@ -365,10 +367,6 @@ export class BST{
                     this.drawLine(node.data, e)
                 });
             }
-
-            if ((node.data.textNode.text) && (node.data.value != node.data.textNode.text)){
-                console.log(node);
-            }
         });
 
         this.stage.update();
@@ -391,7 +389,7 @@ export class BST{
     correct(){
         this.promptText.color = CORRECT_COLOUR;
         this.errorCount = 0;
-        if (this.hint) this.toggleHint(false);
+        this.toggleHint(false);
         this.promptText.text = "Correct";
 
         this.stage.update();
@@ -466,10 +464,10 @@ export class BST{
                 () => this.giveHint()
             );
         } else {
-            this.hint.changeColour(DEFAULT_COLOUR);
+            if (this.hint) this.hint.changeColour(DEFAULT_COLOUR);
             this.hint = null;
             // setCircleColour(this.root.shapeNode, DEFAULT_COLOUR);
-            this.hintButton.clear();
+            if (this.hintButton) this.hintButton.clear();
             this.hintButton = null;
         }
     }

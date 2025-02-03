@@ -9,10 +9,10 @@ export class MergeDrill{
         this.hintCount = 3;
         this.errorCount = 0;
         this.font = ["", "50px Arial", ""]
-        this.description = "-Merge the two smaller list into one sorted " + 
+        this.description = "- Merge the two smaller list into one sorted " + 
         "list step by step\n\n " +
-        "-Click on two elements to move them around.\n\n" +
-        "-Click on New List to get a new list.\n\n"
+        "- Click on two elements to move them around.\n\n" +
+        "- Click on New List to get a new list.\n\n"
 
         this.select = [];
         this.nodes = [];

@@ -5,7 +5,6 @@ const PARTIAL_COLOUR = "#34ffcd";
 const HINT_COLOUR = "#FAEF59";
 const BUTTON_COLOUR = "#D3D3D3";
 
-
 class InstructionIcon{
     constructor(stage){
         this.stage = stage
@@ -129,6 +128,17 @@ class Rect{
         });
     }
 
+    drawBoarder(colour){
+        this.shapeNode
+            .graphics.clear()
+            .setStrokeStyle(5)
+            .beginStroke(colour)
+            .beginFill(this.colour)
+            .drawRect(0, 0, this.width, this.height)
+            .endFill();
+        this.stage.update();
+    }
+
     clear(){
         this.stage.removeChild(this.container);
     }
@@ -207,9 +217,20 @@ class Circle{
         this.shapeNode.baseColour = colour;
         this.shapeNode
             .graphics.clear()
-                .beginFill(this.colour)
-                .drawCircle(0, 0, this.radius)
-                .endFill();
+            .beginFill(this.colour)
+            .drawCircle(0, 0, this.radius)
+            .endFill();
+        this.stage.update();
+    }
+
+    drawBoarder(colour){
+        this.shapeNode
+            .graphics.clear()
+            .setStrokeStyle(5)
+            .beginStroke(colour)
+            .beginFill(this.colour)
+            .drawCircle(0, 0, this.radius)
+            .endFill();
         this.stage.update();
     }
 

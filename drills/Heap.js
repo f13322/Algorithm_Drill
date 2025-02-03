@@ -9,9 +9,9 @@ export class heapDrill{
 
         this.values = this.heapify(randomList(4));
         this.count = 0;
-        this.description = "-Restore the heap after inserting or deleting a " + 
+        this.description = "- Restore the heap after inserting or deleting a " + 
         "value step by step.\n\n " +
-        "-Click on two elements to swap them around.\n\n"
+        "- Click on two elements to swap them around.\n\n"
         
         this.stage = new createjs.Stage("canvas");
         this.stage.width = this.stageWidth;
@@ -373,7 +373,6 @@ export class heapDrill{
     }
 
     giveHint(){
-        console.log("HINT");
         for (let i = 0; i < this.steps[this.count].length; i++){
             if (this.steps[this.count][i] != this.nodes[i].textNode.text){
                 this.nodes[i].object.changeColour(HINT_COLOUR);
