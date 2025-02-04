@@ -128,7 +128,7 @@ export class QuickSortDrill{
                 this.activeLayer.add(event.target.parent);
             }
             else if (this.activeLayer.parent.select) {
-                const selectedNode = this.nodes.select.shapeNode;
+                const selectedNode = this.activeLayer.parent.select.shapeNode;
                 selectedNode.selected = false;
                 event.target.selected = false;
                 this.activeLayer.parent.select = null;
@@ -205,12 +205,18 @@ export class QuickSortDrill{
     }
 
     reset(){
+        this.drawInitial();
+        this.stage.update();
+        
         this.stage.removeAllChildren();
         this.errorCount = 0;
         this.activeLayer = null;
-
+        this.piviotChoice;
+        
         this.nodes = [];
         this.hints = [];
+        this.layerStack = [];
+        this.piviotOptions = [];
 
         var list = randomList(this.numValues);
         this.steps = [];

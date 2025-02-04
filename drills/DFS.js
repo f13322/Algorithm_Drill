@@ -7,7 +7,7 @@ export class DFS{
         this.errorCount = 0;
         this.hintCount = 3;
         this.description =
-            "- Treverse through the whole graph using DFS.\n\n" +
+            "- Traverse through the whole graph using DFS.\n\n" +
             "- Click on the correct node to update its colour.\n\n" + 
             "- Click on Redraw if the graph is confusing.";
         this.stage = new createjs.Stage("canvas");
@@ -38,9 +38,9 @@ export class DFS{
         this.simulation = d3.forceSimulation(this.nodes)
         .force('link', d3.forceLink(this.links).strength(0.5).distance(500).iterations(2))
         .force('charge', d3.forceManyBody().strength(-1000))
-        .force('center', d3.forceCenter(this.stageWidth/2, this.stageHeight/2 + 50).strength(0.2))
+        .force('center', d3.forceCenter(this.stageWidth/2, this.stageHeight/2 + 90).strength(0.2))
         .force("collide", d3.forceCollide((d) => d.radius*2))
-        .force("boundary", forceBoundary(100, 300, this.stageWidth - 100, this.stageHeight - 100))
+        .force("boundary", forceBoundary(100, 340, this.stageWidth - 100, this.stageHeight - 60))
         .stop();
         this.simulation.parent = this;
 
@@ -116,6 +116,22 @@ export class DFS{
 
             this.seen[i].shapeNode.removeAllEventListeners();
             this.done[i].shapeNode.removeAllEventListeners();
+
+            const seenIndex = new createjs.Text("", "30px Arial", "").set({
+                text: i,
+                textAlign: "center",
+                x: i*60 + this.stageWidth/2 - this.numNodes * 60,
+                y: 200,
+            });
+            this.stage.addChild(seenIndex);
+
+            const doneIndex = new createjs.Text("", "30px Arial", "").set({
+                text: i,
+                textAlign: "center",
+                x: i*60 + this.stageWidth/2 + 210,
+                y: 200,
+            });
+            this.stage.addChild(doneIndex);
         }
 
         this.stage.addChild(new createjs.Text("", "bold 50px Arial", "").set({
@@ -154,7 +170,7 @@ export class DFS{
         this.redrawButton.shapeNode.addEventListener("click", () => this.draw());
 
         this.redrawButton = this.insertButton = new Button(
-            (this.stageWidth - 210)/2 + 150, 20, 210, 100, this.stage, "New Graph"
+            (this.stageWidth - 220)/2 + 150, 20, 220, 100, this.stage, "New Graph"
         ); 
         this.redrawButton.shapeNode.addEventListener("click", () => this.reset());
 
@@ -162,7 +178,7 @@ export class DFS{
             text: "",
             textAlign: "center",
             x: this.stageWidth/2,
-            y: 200,
+            y: 240,
             lineWidth: 400
         });
         this.stage.addChild(this.promptText);

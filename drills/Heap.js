@@ -157,7 +157,6 @@ export class heapDrill{
 
         new InstructionIcon(this.stage);
 
-
         this.toggleButtons(true);
     }
 
@@ -229,8 +228,7 @@ export class heapDrill{
             }
         }
 
-        this.correct();
-
+        
         for (let i = 0; i < this.list.length; i++){
             this.list[i].textNode.text = this.nodes[i].textNode.text;
         }
@@ -242,6 +240,7 @@ export class heapDrill{
             }
             this.toggleButtons(true);
         }
+        this.correct();
     }
 
     addValue(){
@@ -316,7 +315,7 @@ export class heapDrill{
         this.promptText.color = CORRECT_COLOUR;
         this.errorCount = 0;
         this.toggleHint(false);     
-        this.promptText.text = "Correct";
+        this.promptText.text = (this.count >= this.steps.length)?"Done":"Correct";
         this.nodes.forEach((e) => e.object.changeColour(DEFAULT_COLOUR));
     }
 

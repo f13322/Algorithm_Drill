@@ -7,7 +7,7 @@ export class BFS{
         this.errorCount = 0;
         this.hintCount = 3;
         this.description =
-            "- Treverse through the whole graph using BFS.\n\n" + 
+            "- Traverse through the whole graph using BFS.\n\n" + 
             "- Click on the correct node to update its colour.\n\n" + 
             "- Click on Redraw if the graph is confusing.";
 
@@ -38,9 +38,9 @@ export class BFS{
         this.simulation = d3.forceSimulation(this.nodes)
         .force('link', d3.forceLink(this.links).strength(0.5).distance(500).iterations(2))
         .force('charge', d3.forceManyBody().strength(-1000))
-        .force('center', d3.forceCenter(this.stageWidth/2, this.stageHeight/2 + 50).strength(0.2))
+        .force('center', d3.forceCenter(this.stageWidth/2, this.stageHeight/2 + 90).strength(0.2))
         .force("collide", d3.forceCollide((d) => d.radius*2))
-        .force("boundary", forceBoundary(100, 300, this.stageWidth - 100, this.stageHeight - 100))
+        .force("boundary", forceBoundary(100, 340, this.stageWidth - 100, this.stageHeight - 60))
         .stop();
         this.simulation.parent = this;
 
@@ -106,6 +106,13 @@ export class BFS{
             );
 
             this.heights[i].shapeNode.removeAllEventListeners();
+            const text = new createjs.Text("", "30px Arial", "").set({
+                text: i,
+                textAlign: "center",
+                x: i*60 + this.stageWidth/2 - this.numNodes * 60/2 + 30,
+                y: 200,
+            });
+            this.stage.addChild(text);
         }
 
         this.stage.addChild(new createjs.Text("", "bold 50px Arial", "").set({
@@ -136,7 +143,7 @@ export class BFS{
         this.redrawButton.shapeNode.addEventListener("click", () => this.draw());
 
         this.redrawButton = this.insertButton = new Button(
-            (this.stageWidth - 210)/2 + 150, 20, 210, 100, this.stage, "New Graph"
+            (this.stageWidth - 220)/2 + 150, 20, 220, 100, this.stage, "New Graph"
         ); 
         this.redrawButton.shapeNode.addEventListener("click", () => this.reset());
 
@@ -144,7 +151,7 @@ export class BFS{
             text: "",
             textAlign: "center",
             x: this.stageWidth/2,
-            y: 200,
+            y: 240,
             lineWidth: 400
         });
         this.stage.addChild(this.promptText);

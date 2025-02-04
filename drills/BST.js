@@ -56,6 +56,24 @@ export class BST{
             this.root.right
         ]
 
+        while (this.values.size < 5){
+            const value = Math.floor(Math.random() * 100) + 1;
+            let current = this.root;
+            if (this.values.has(value)){
+                continue;
+            }
+            while (current.value){
+                if (value < current.value){
+                    current = current.left;
+                } else {
+                    current = current.right;
+                }
+            }
+            current.value = value;
+            this.addNode(current);
+            this.values.add(value);
+        }
+
         this.root.children.forEach((e) => {
             e.shapeNode.removeAllEventListeners();
             e.setFontSize(this.circleSize);
