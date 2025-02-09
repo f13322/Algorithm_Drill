@@ -295,6 +295,7 @@ export class heapDrill{
 
         this.values[0] = this.values.pop();
         this.steps = this.percolateDown(this.values, 0);
+        this.steps[0].push("");
         this.count = 0;
 
 
