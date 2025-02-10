@@ -19,7 +19,7 @@ export class BST{
         this.stage.width = this.stageWidth;
         this.stage.height = this.stageHeight;
         this.stage.enableMouseOver();
-        
+
         this.line = new createjs.Shape();
         this.stage.addChild(this.line);
 
@@ -117,9 +117,6 @@ export class BST{
         event.target.object.shapeNode.removeAllEventListeners();
         event.target.object.children.forEach((e) => {
             e.shapeNode.addEventListener("click", (evt) => {
-                this.click(evt);
-            });
-            e.shapeNode.addEventListener("touchend", (evt) => {
                 this.click(evt);
             });
             e.activate();
@@ -223,7 +220,6 @@ export class BST{
         event.target.object.shapeNode.removeAllEventListeners();
         event.target.object.children.forEach((e) => {
             e.shapeNode.addEventListener("click", (evt) => this.click(evt));
-            e.shapeNode.addEventListener("touchend", (evt) => this.click(evt));
             e.activate();
         });
     }
@@ -251,7 +247,6 @@ export class BST{
         event.target.object.shapeNode.removeAllEventListeners();
         event.target.object.children.forEach((e) => {
             e.shapeNode.addEventListener("click", (evt) => this.click(evt));
-            e.shapeNode.addEventListener("touchend", (evt) => this.click(evt));
             e.activate();
         });
     }
@@ -322,7 +317,6 @@ export class BST{
 
         this.root.activate();
         this.root.shapeNode.addEventListener("click", (evt) => this.click(evt));
-        this.root.shapeNode.addEventListener("touchend", (evt) => this.click(evt));
         this.currentNode = this.root;
 
         this.stage.update();

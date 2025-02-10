@@ -157,7 +157,6 @@ export class BFS{
         }
 
         this.nodes.forEach((e) => e.shapeNode.addEventListener("click", (evt) => this.click(evt)));
-        this.nodes.forEach((e) => e.shapeNode.addEventListener("touchend", (evt) => this.click(evt)));
 
         this.redrawButton = this.insertButton = new Button(
             (this.stageWidth - 200)/2 - 150, 20, 200, 100, this.stage, "Redraw"

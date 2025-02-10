@@ -66,7 +66,6 @@ class Rect{
         this.colour = colour
 
         this.stage = stage;
-
         this.shapeNode = new createjs.Shape();
         this.shapeNode.baseColour = colour;
         this.shapeNode.width = width;
@@ -118,6 +117,10 @@ class Rect{
         this.shapeNode.addEventListener("mouseover", () => {
             setRectColour(this.shapeNode, HIGHLIGHT_COLOUR);
             this.stage.update();
+            if (this.tap){
+                this.shapeNode.dispatchEvent("mouseout");
+                this.tap = false;
+            }
         });
         
         this.shapeNode.addEventListener("mouseout", () => {
@@ -125,6 +128,10 @@ class Rect{
                 setRectColour(this.shapeNode, this.shapeNode.baseColour);
                 this.stage.update();
             }
+        });
+
+        this.shapeNode.addEventListener("pressup", () => {
+            this.tap = true;
         });
     }
 
@@ -238,6 +245,10 @@ class Circle{
         this.shapeNode.addEventListener("mouseover", () => {
             setCircleColour(this.shapeNode, HIGHLIGHT_COLOUR);
             this.stage.update();
+            if (this.tap){
+                this.shapeNode.dispatchEvent("mouseout");
+                this.tap = false;
+            }
         });
         
         this.shapeNode.addEventListener("mouseout", () => {
@@ -246,6 +257,12 @@ class Circle{
                 this.stage.update();
             }
         });
+
+        this.shapeNode.addEventListener("pressup", () => {
+            this.tap = true;
+        });
+
+
     }
 
     setFontSize(size){
@@ -283,12 +300,22 @@ class Button extends Rect{
                 y: height/2,
             }
         )
+
+        this.shapeNode.removeAllEventListeners();
         this.shapeNode.addEventListener("mouseover", () =>{
             this.hoverOn();
+            if (this.tap){
+                this.shapeNode.dispatchEvent("mouseout");
+                this.tap = false;
+            }
         });
 
         this.shapeNode.addEventListener("mouseout", () =>{
             this.hoverOff();
+        });
+        
+        this.shapeNode.addEventListener("pressup", () =>{
+            this.tap = true;
         });
     }
 

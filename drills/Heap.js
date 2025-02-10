@@ -266,15 +266,9 @@ export class heapDrill{
             this.click(event);
         })
         
-        this.addNode.shapeNode.addEventListener("touchend", (event) => {
-            this.click(event);
-        })
 
         this.nodes.forEach((e) => {
             e.shapeNode.addEventListener("click", (event) => {
-                this.click(event);
-            });
-            e.shapeNode.addEventListener("touchend", (event) => {
                 this.click(event);
             });
             e.object.activate();
@@ -301,9 +295,6 @@ export class heapDrill{
 
         this.nodes.forEach((e) => {
             e.shapeNode.addEventListener("click", (event) => {
-                this.click(event);
-            });
-            e.shapeNode.addEventListener("touchend", (event) => {
                 this.click(event);
             });
             e.object.activate();
