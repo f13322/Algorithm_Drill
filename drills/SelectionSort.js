@@ -71,10 +71,10 @@ export class SelectionSortDrill{
     }
     
     swap(t1, t2){
-        var temp = t1.parent.textNode.text;
+        var temp = t1.object.textNode.text;
 
-        t1.parent.textNode.text = t2.parent.textNode.text;
-        t2.parent.textNode.text = temp;
+        t1.object.textNode.text = t2.object.textNode.text;
+        t2.object.textNode.text = temp;
 
         t1.selected = false;
         setRectColour(t1, t1.baseColour);
@@ -95,12 +95,11 @@ export class SelectionSortDrill{
                 "" + this.steps[0][i],
                 DEFAULT_COLOUR
             );
-            const container = node.container;
             const rect = node.shapeNode;
                         
             rect.on("click", (evt) => this.click(evt));
 
-            this.nodes.push(container);
+            this.nodes.push(node);
         }
 
         this.promptText = new createjs.Text("", "bold 50px Arial", "").set({

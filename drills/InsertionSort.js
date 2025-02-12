@@ -106,12 +106,11 @@ export class InsertionSortDrill{
                 "" + this.steps[0][0][i],
                 (i == 0)? PARTIAL_COLOUR: DEFAULT_COLOUR
             );
-            const container = node.container;
             const rect = node.shapeNode;
             
             rect.on("click", (evt) => this.click(evt));
             
-            this.nodes.push(container);
+            this.nodes.push(node);
         }
 
         this.promptText = new createjs.Text("", "bold 50px Arial", "").set({

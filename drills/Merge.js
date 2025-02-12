@@ -74,16 +74,15 @@ export class MergeDrill{
                     (j == 0)? "":"" + this.steps[j][i],
                     DEFAULT_COLOUR
                 );
-                const container = node.container;
                 const rect = node.shapeNode;
                                 
                 rect.on("click", (evt) => this.click(evt));
 
                 if (j == 0){
                     rect.correctValue = "" + this.steps[0][i];
-                    this.nodes.push(container);
+                    this.nodes.push(node);
                 } else {
-                    this.steps[j][i] = container;
+                    this.steps[j][i] = node;
                 }
             }
         }
@@ -150,12 +149,12 @@ export class MergeDrill{
         var correctNode;
         var originNode;
         if (target == this.nodes[this.count].shapeNode &&
-            target.correctValue == this.select[0].parent.textNode.text){
+            target.correctValue == this.select[0].object.textNode.text){
                 correct = true;
                 correctNode = target;
                 originNode = this.select[0];
         } else if (this.select[0] == this.nodes[this.count].shapeNode &&
-            this.select[0].correctValue == target.parent.textNode.text){
+            this.select[0].correctValue == target.object.textNode.text){
                 correct = true;
                 correctNode = this.select[0];
                 originNode = target;
@@ -164,7 +163,6 @@ export class MergeDrill{
         if (correct){
             this.promptText.color = CORRECT_COLOUR;
             swapRect(target, this.select[0]);
-            // correctNode.parent.textNode.text = originNode.parent.textNode.text;
             this.count++;
             this.errorCount = 0;
             this.toggleHint(false);

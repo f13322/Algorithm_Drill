@@ -101,9 +101,12 @@ export class QuickSortDrill{
             this.nodes.push(node);
         }
 
-        this.nodes.forEach(
-            (e) => e.shapeNode.on("click", (evt) => this.click(evt))
-        );
+        this.nodes.forEach((e) => {
+            e.shapeNode.on("click", (evt) => this.click(evt));
+            setTimeout(function(){
+                e.shapeNode.dispatchEvent("mouseout")
+            }, 100);
+        });
         
         this.activeLayer = new Layer(
             this.stageWidth/2 - this.cellWidth/2, 110 + this.cellHeight, 
@@ -372,9 +375,13 @@ class Layer{
                 )
             )
     
-            this.right[this.right.length-1].shapeNode.addEventListener(
+            const node = this.right[this.right.length-1].shapeNode;
+            node.addEventListener(
                 "click", (evt) => this.click(evt)
             );
+            setTimeout(function(){
+                node.dispatchEvent("mouseout")
+            }, 100);
             this.right.x = this.right.x + this.cellHeight/2;
         } else {
             this.left.forEach((e) => e.move(-1 * this.cellWidth, 0));
@@ -387,9 +394,13 @@ class Layer{
                 )
             )
 
-            this.left[this.left.length-1].shapeNode.addEventListener(
+            const node = this.left[this.left.length-1].shapeNode;
+            node.addEventListener(
                 "click", (evt) => this.click(evt)
             );
+            setTimeout(function(){
+                node.dispatchEvent("mouseout")
+            }, 100);
             this.left.x = this.left.x - this.cellHeight/2;
         }
         
