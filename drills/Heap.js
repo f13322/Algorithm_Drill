@@ -101,7 +101,7 @@ export class heapDrill{
                 circle.shapeNode.removeAllEventListeners(); 
                 circle.setFontSize(this.circleSize);
 
-                this.nodes.push(circle.container);
+                this.nodes.push(circle);
             }
         }
 
@@ -131,13 +131,13 @@ export class heapDrill{
                 rectSize,
                 rectSize,
                 this.stage,
-                "" + this.nodes[i].children[1].text,
+                "" + this.nodes[i].textNode.text,
             )
 
             rect.setFontSize(35);
             rect.shapeNode.removeAllEventListeners();
 
-            this.list.push(rect.container);
+            this.list.push(rect);
         }
 
         this.promptText = new createjs.Text("", "bold 50px Arial", "").set({
@@ -158,13 +158,6 @@ export class heapDrill{
         new InstructionIcon(this.stage);
 
         this.toggleButtons(true);
-    }
-
-    swap(t1, t2){
-        const l1 = this.list[this.nodes.indexOf(t1.parent)].shapeNode;
-        const l2 = this.list[this.nodes.indexOf(t2.parent)].shapeNode;
-        swapCircle(t1, t2);
-        swapRect(l1, l2);
     }
 
     click(event){
@@ -271,7 +264,7 @@ export class heapDrill{
             e.shapeNode.addEventListener("click", (event) => {
                 this.click(event);
             });
-            e.object.activate();
+            e.activate();
         })
 
         this.stage.update();
@@ -297,7 +290,7 @@ export class heapDrill{
             e.shapeNode.addEventListener("click", (event) => {
                 this.click(event);
             });
-            e.object.activate();
+            e.activate();
         })
 
         this.stage.update();
@@ -308,7 +301,7 @@ export class heapDrill{
         this.errorCount = 0;
         this.toggleHint(false);     
         this.promptText.text = (this.count >= this.steps.length)?"Done":"Correct";
-        this.nodes.forEach((e) => e.object.changeColour(DEFAULT_COLOUR));
+        this.nodes.forEach((e) => e.changeColour(DEFAULT_COLOUR));
     }
 
     incorrect(){
@@ -376,7 +369,7 @@ export class heapDrill{
     giveHint(){
         for (let i = 0; i < this.steps[this.count].length; i++){
             if (this.steps[this.count][i] != this.nodes[i].textNode.text){
-                this.nodes[i].object.changeColour(HINT_COLOUR);
+                this.nodes[i].changeColour(HINT_COLOUR);
             }
         }
         this.stage.update();
