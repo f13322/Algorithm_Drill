@@ -5,18 +5,18 @@ export class SelectionSortDrill{
         this.stageHeight = 700;
         this.numValues = 8;
 
+        this.font = ["", "50px Arial", ""]
+        this.description = "- Sort the list using insertion sort.\n\n" + 
+        "- Click on two elements to swap them around.\n\n" +
+        "- Click on New List to get a new list.\n\n"     
+
         this.cellWidth = 120;   // Size of each rectangle
         this.cellHeight = 120;
         
         this.count = 1;     // Tracks the number of iterations
 
         this.hintCount = 3;     // Number of incorrect attempts before hints is given
-        this.errorCount = 0;    // Current number of incorrect attempts
-
-        this.font = ["", "50px Arial", ""]
-        this.description = "- Sort the list using insertion sort.\n\n" + 
-        "- Click on two elements to swap them around.\n\n" +
-        "- Click on New List to get a new list.\n\n"        
+        this.errorCount = 0;    // Current number of incorrect attempts   
         
         // Initialise the stage on the canvas
         this.stage = new createjs.Stage("canvas");
@@ -224,7 +224,7 @@ export class SelectionSortDrill{
 
             // Update the prompt
             this.promptText.color = CORRECT_COLOUR;
-            if (this.count == this.numValues){  // If it list is sorted
+            if (this.count == this.numValues){  // If the list is sorted
                 setRectColour(this.nodes[0].shapeNode, CORRECT_COLOUR);
                 this.promptText.text = "The list is now sorted.";
                 this.nodes[0].shapeNode.removeAllEventListeners();
@@ -304,7 +304,7 @@ export class SelectionSortDrill{
                     x:this.nodes[this.numValues - this.count].x + this.cellWidth * 3/20,
                     y:this.nodes[this.numValues - this.count].y - 10
                 },
-                15 * (this.numValues - this.count - maxIndex)
+                15 * (this.numValues - this.count - maxIndex) // Set height of arc
             )
         );
         this.hints.push(
@@ -317,9 +317,9 @@ export class SelectionSortDrill{
                     x:this.nodes[maxIndex].x + this.cellWidth * 17/20,
                     y:this.nodes[maxIndex].y - 10
                 },
-                15 * (this.numValues - this.count - maxIndex),
+                15 * (this.numValues - this.count - maxIndex), // Set height of arc
                 "",
-                true
+                true    // Set direction to anti-clockwise
             )
         );
 
