@@ -179,8 +179,6 @@ export class QuickSortDrill{
         // Clear hint
         this.errorCount = 0;
         this.toggleHint(false);
-
-        
     }
 
     // Handles hints and prompt when user made an incorrect move
